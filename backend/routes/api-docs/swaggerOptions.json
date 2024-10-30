@@ -1,0 +1,692 @@
+{
+	"openapi": "3.0.2",
+	"info": {
+		"title": "Demo Movies API",
+		"description": "This is a simple Express API based on the Internet Movie Database (IMDB) API. It provides information on movies. The API endpoints and their usage are described in detail below.",
+		"version": "1.0.0",
+		"termsOfService": "http://swagger.io/terms/",
+		"contact": {
+			"email": "n5001927@qut.edu.au"
+		},
+		"license": {
+			"name": "Apache 2.0",
+			"url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	],
+	"tags": [
+		{
+			"name": "Movies",
+			"description": "API queries based on movie title and imdbID."
+		},
+		{
+			"name": "Posters",
+			"description": "API queries based on movie poster."
+		},
+		{
+			"name": "Authentication",
+			"description": "User login and registration."
+		}
+	],
+	"paths": {
+		"/movies/search": {
+			"get": {
+				"tags": ["Movies"],
+				"description": "Returns a list of movie data. The list is arranged by imdbID, in ascending order.",
+				"operationId": "listAllMatchingMovies",
+				"produces": ["application/json"],
+				"parameters": [
+					{
+						"name": "title",
+						"in": "query",
+						"required": true,
+						"description": "Movie title",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "year",
+						"in": "query",
+						"required": false,
+						"description": "Movie year",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "page",
+						"in": "query",
+						"required": false,
+						"description": "Page number",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "An array of objects containing Title, Year, imdbID, and Type properties. The resultes are limited to 100 per page. An example of one object in the array is shown below.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"data": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"Title": {
+														"type": "string"
+													},
+													"Year": {
+														"type": "string"
+													},
+													"imdbID": {
+														"type": "string"
+													},
+													"Type": {
+														"type": "string"
+													}
+												}
+											}
+										},
+										"pagination": {
+											"type": "object",
+											"properties": {
+												"total": {
+													"type": "number"
+												},
+												"lastPage": {
+													"type": "number"
+												},
+												"perPage": {
+													"type": "number"
+												},
+												"currentPage": {
+													"type": "number"
+												},
+												"from": {
+													"type": "number"
+												},
+												"to": {
+													"type": "number"
+												}
+											}
+										}
+									}
+								},
+								"example": {
+									"data": [
+										{
+											"Title": "The Matrix",
+											"Year": "1999",
+											"imdbID": "tt0133093",
+											"Type": "movie"
+										}
+									],
+									"pagination": {
+										"total": 1,
+										"lastPage": 1,
+										"perPage": 1,
+										"currentPage": 1,
+										"from": 1,
+										"to": 1
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid year query parameter. Click on 'Schema' below to see the possible error responses.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": "Invalid year format. Format must be yyyy."
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal server error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "Internal server error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/movies/data/{imdbID}": {
+			"get": {
+				"tags": ["Movies"],
+				"description": "Use to request movie details and streaming options by imdbID.",
+				"parameters": [
+					{
+						"name": "imdbID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "A successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"Title": {
+											"type": "string"
+										},
+										"Year": {
+											"type": "string"
+										},
+										"Runtime": {
+											"type": "string"
+										},
+										"Genre": {
+											"type": "string"
+										},
+										"Director": {
+											"type": "string"
+										},
+										"Writer": {
+											"type": "string"
+										},
+										"Actors": {
+											"type": "string"
+										},
+										"Ratings": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"Source": {
+														"type": "string"
+													},
+													"Value": {
+														"type": "string"
+													}
+												}
+											}
+										}
+									}
+								},
+								"example": {
+									"Title": "The Matrix",
+									"Year": "1999",
+									"Runtime": "136 min",
+									"Genre": "Action, Sci-Fi",
+									"Director": "Lana Wachowski, Lilly Wachowski",
+									"Writer": "Lana Wachowski, Lilly Wachowski",
+									"Actors": "Keanu Reeves, Laurence Fishburne, Carrie-Anne Moss, Hugo Weaving",
+									"Ratings": [
+										{
+											"Source": "Internet Movie Database",
+											"Value": "8.7/10"
+										},
+										{
+											"Source": "Rotten Tomatoes",
+											"Value": "87%"
+										},
+										{
+											"Source": "Metacritic",
+											"Value": "73/100"
+										}
+									]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid query parameters.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": "Invalid query parameters: year. Query parameters are not permitted."
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal server error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "Internal server error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/posters/{imdbID}": {
+			"get": {
+				"tags": ["Posters"],
+				"description": "Use to request movie poster by imdbID.",
+				"parameters": [
+					{
+						"name": "imdbID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "The requested poster",
+						"content": {
+							"image/png": {}
+						}
+					},
+					"400": {
+						"description": "Invalid query parameters.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": "Invalid query parameters: year. Query parameters are not permitted."
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal server error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "Internal server error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/posters/add/{imdbID}": {
+			"post": {
+				"tags": ["Posters"],
+				"description": "Use to add a movie poster by imdbID.",
+				"parameters": [
+					{
+						"name": "imdbID",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"poster": {
+										"type": "string",
+										"format": "binary"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The movie poster has been successfully added.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": false,
+									"message": "Poster uploaded successfully."
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid query parameters.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": "Invalid query parameters: year. Query parameters are not permitted."
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "The poster failed to write to the disk",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": "ENOENT: no such file or directory, open 'res/posters/notExist_mike@gmail.com.png"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/register": {
+			"post": {
+				"tags": ["Authentication"],
+				"description": "Use to register a new user.",
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									}
+								}
+							},
+							"example": {
+								"email": "test@test.com",
+								"password": "password"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "The user has been successfully registered.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"message": "User created"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad request.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "Request body incomplete, both email and password are required"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Conflict. User already exists.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "User already exists"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal server error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "Internal server error"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/user/login": {
+			"post": {
+				"tags": ["Authentication"],
+				"description": "Use to login a user.",
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									}
+								}
+							},
+							"example": {
+								"email": "test@test.com",
+								"password": "password"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The user has been successfully logged in.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"token": {
+											"type": "string"
+										},
+										"token_type": {
+											"type": "string"
+										},
+										"expires_in": {
+											"type": "number"
+										}
+									}
+								},
+								"example": {
+									"token": "aJWTBearerToken",
+									"token_type": "Bearer",
+									"expires_in": 86400
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad request.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										},
+										"message": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "Request body incomplete, both email and password are required"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized. Invalid email or password.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										},
+										"message": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "Incorrect email or password"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal server error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string"
+										}
+									}
+								},
+								"example": {
+									"error": true,
+									"message": "Internal server error"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"BearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"description": "Enter JWT Bearer token only"
+			}
+		}
+	}
+}

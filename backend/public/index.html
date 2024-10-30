@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+	<script>
+		const baseApiUrl = "http://localhost:3000";
+
+		// search for movies by imdb id
+		async function searchMoviesByimdbID(imdbID) {
+			try {
+				let response = await fetch(`${baseApiUrl}/movies/data/${imdbID}`, {
+					method: "GET",
+				});
+				let data = await response.json();
+
+				if (!response.ok) {
+					// check for 200 code
+					console.log(data);
+					return [null, data]; // return error message
+				} else {
+					console.log(data);
+					return [data, null]; // return movie details
+				}
+			} catch (e) {
+				console.log(e);
+			}
+		}
+
+		// check for alt poster
+		async function checkForAltPoster(imdbID) {
+			try {
+				let response = await fetch(`${baseApiUrl}/posters/${imdbID}`, {
+					method: "GET",
+				});
+
+				if (!response.ok) {
+					// check for 200 code
+					let data = await response.json();
+					return [null, data]; // return error message
+				} else {
+					let data = await response.blob();
+					let imageUrl = URL.createObjectURL(data);
+					return [imageUrl, null]; // return image url
+				}
+			} catch (e) {
+				console.log(e);
+			}
+		}
+
+		// add alt poster
+		async function addAltPoster(imdbID, file) {
+			try {
+				// create formData
+				let formData = new FormData();
+				formData.append("userFile", file);
+
+				// send the request
+				let response = await fetch(`${baseApiUrl}/posters/add/${imdbID}`, {
+					method: "POST",
+					body: formData,
+				});
+				let data = await response.json();
+
+				// check for error status from the server
+				if (!response.ok) {
+					return [null, data]; // return error message
+				} else {
+					return [data, null]; // return success message
+				}
+			} catch (e) {
+				console.log(e);
+			}
+		}
+
+		// create a new movie card
+		function createMovieCard(movie) {
+			return `
+			<div id="card" style="display: flex; flex-direction: column;">
+		  			<div style="display: flex;">
+		      			<div id="poster${movie.imdbID}">
+		          			<img src="${movie.Poster}" alt="${movie.Title}" width="300px"/>
+						<img id="altPoster${movie.imdbID}" src="" alt="${movie.Title}" width="300px"/>
+		      			</div>
+		      			<div>
+		          			<h3><a href="https://imdb.com/title/${movie.imdbID}" target="_blank">${movie.Title} (${movie.Year})</a></h3>
+		          			<button id="detailsButton${movie.imdbID}">Get Details</button><br />
+						<div id="details${movie.imdbID}"></div><br />
+						<div id="detailsMessage${movie.imdbID}"></div><br />
+						<button id="posterButton${movie.imdbID}">Get Alt Poster</button><br />
+						<div id="posterMessage${movie.imdbID}"></div><br />
+						<input type="file" id="file${movie.imdbID}" accept=".png"/><br />
+						<button id="addPosterButton${movie.imdbID}">Add Alt Poster</button><br />
+			        </div>
+		  			</div>
+			</div>
+			`;
+		}
+
+		// create a new movie card with streaming options
+		function createMovieDetails(movie) {
+			return `
+					<div>
+					${movie.details.Rated}<br />
+					${movie.details.Plot}<br /> <br />
+					${movie.details.Ratings.map(
+						(rating) => rating.Source + ": " + rating.Value + "<br />"
+					).join("")}<br />
+					${
+						movie.streamingInfo.hasOwnProperty("au")
+							? "Available in Australia: " +
+							  movie.streamingInfo.au
+									.map(
+										(option) =>
+											`<a href="${option.link}"  target="_blank">${option.service.name} (${option.type})</ a><br />`
+									)
+									.join(" ")
+							: "Not available in Australia"
+					}<br />
+					</div>
+					`;
+		}
+
+		async function searchMoviesByTitle(e) {
+			try {
+				e.preventDefault();
+				document.getElementById("searchButton").disabled = true;
+				document.getElementById("errorMessage").innerText = "";
+
+				const movieTitleToFind = document
+					.getElementById("searchTitle")
+					.value.trim();
+
+				let response = await fetch(
+					`${baseApiUrl}/movies/search/${movieTitleToFind}`,
+					{
+						method: "GET",
+					}
+				);
+				let data = await response.json();
+
+				// check for error status from the server
+				if (!response.ok || data.error) {
+					document.getElementById("errorMessage").innerText = data.message;
+					document.getElementById("searchButton").disabled = false;
+					return;
+				}
+				// assume that the data is an array of movies, including an empty array
+				else {
+					document.getElementById("errorMessage").innerText = "";
+
+					let dataDiv = document.getElementById("movies");
+					dataDiv.innerHTML = "";
+					// case of movies found
+					for (let movie of data.Search) {
+						// create a html card for each movie
+						let card = document.createElement("div");
+						card.innerHTML = createMovieCard(movie);
+						document.getElementById("movies").appendChild(card);
+
+						// set up an event listener for the details button
+						document
+							.getElementById(`detailsButton${movie.imdbID}`)
+							.addEventListener("click", (e) => {
+								e.target.disabled = true;
+								searchMoviesByimdbID(movie.imdbID).then(
+									([movieDetails, error]) => {
+										e.target.disabled = false;
+
+										if (error) {
+											document.getElementById(
+												`detailsMessage${movie.imdbID}`
+											).innerHTML = error.message;
+											return;
+										}
+
+										// display the details in the same card
+										document.getElementById(
+											`details${movie.imdbID}`
+										).innerHTML = createMovieDetails(movieDetails);
+										document.getElementById(
+											`posterMessage${movie.imdbID}`
+										).innerHTML = "";
+										document.getElementById(
+											`detailsMessage${movie.imdbID}`
+										).innerHTML = "";
+									}
+								);
+							});
+
+						// set up event listener for the get poster button
+						document
+							.getElementById(`posterButton${movie.imdbID}`)
+							.addEventListener("click", (e) => {
+								e.target.disabled = true;
+								checkForAltPoster(movie.imdbID).then(([poster, error]) => {
+									e.target.disabled = false;
+									if (error) {
+										document.getElementById(
+											`posterMessage${movie.imdbID}`
+										).innerHTML = error.message;
+										return;
+									}
+									document.getElementById(
+										`posterMessage${movie.imdbID}`
+									).innerHTML = "";
+									document.getElementById(`altPoster${movie.imdbID}`).src =
+										poster;
+								});
+							});
+
+						// set up event listener for the add poster button
+						document
+							.getElementById(`addPosterButton${movie.imdbID}`)
+							.addEventListener("click", (e) => {
+								e.target.disabled = true;
+								addAltPoster(
+									movie.imdbID,
+									document.getElementById(`file${movie.imdbID}`).files[0]
+								).then(([poster, error]) => {
+									e.target.disabled = false;
+									if (error) {
+										document.getElementById(
+											`posterMessage${movie.imdbID}`
+										).innerHTML = error.message;
+										return;
+									}
+									document.getElementById(
+										`posterMessage${movie.imdbID}`
+									).innerHTML = poster.message;
+								});
+							});
+					}
+					// case of no movies found
+					if (data.Search.length === 0) {
+						document.getElementById("errorMessage").innerText =
+							"No movies found with that title";
+					}
+				}
+				document.getElementById("searchButton").disabled = false;
+			} catch (error) {
+				console.log(error);
+			}
+		}
+	</script>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				margin: 0;
+				padding: 20px;
+				background-color: #f4f4f4;
+			}
+
+			h1,
+			h2 {
+				color: #333;
+			}
+
+			form {
+				margin-bottom: 20px;
+			}
+
+			#formTitle input[type="text"] {
+				padding: 10px;
+				margin-bottom: 10px;
+				border: 1px solid #ddd;
+				width: 300px;
+			}
+
+			#formTitle button {
+				padding: 10px 20px;
+				border: none;
+				background-color: #36882d;
+				color: #fff;
+				cursor: pointer;
+			}
+
+			#formTitle button:hover {
+				background-color: #17610f;
+			}
+
+			#formTitle button:disabled {
+				background-color: #ccc;
+				color: 666666;
+				cursor: not-allowed;
+			}
+
+			#movies input[type="file"] {
+				padding: 10px;
+				margin-bottom: 10px;
+				border: 1px solid #ddd;
+				width: 300px;
+			}
+
+			#movies button {
+				padding: 10px 20px;
+				border: none;
+				background-color: #eeffef;
+				color: #000000;
+				cursor: pointer;
+			}
+
+			#movies button:hover {
+				background-color: #36791b;
+				color: #cccccc;
+			}
+
+			#movies button:disabled {
+				background-color: #ccc;
+				color: #666666;
+				cursor: not-allowed;
+			}
+
+			#movies div {
+				background-color: #fff;
+				padding: 10px;
+				max-width: 800px;
+			}
+
+			.container {
+				display: flex;
+				flex-direction: row;
+			}
+
+			.search-form {
+				flex: 1;
+				max-width: 25%;
+			}
+
+			.results {
+				flex: 2;
+			}
+		</style>
+		<title>Movie Finder</title>
+	</head>
+	<body>
+		<div class="container">
+			<div class="search-form">
+				<h1>Movie Finder</h1>
+				<p>Search for a movie:</p>
+				<form id="formTitle" onsubmit="return searchMoviesByTitle(event)">
+					<input
+						type="text"
+						id="searchTitle"
+						placeholder="Title"
+						onfocus="this.style.backgroundColor = '#ffffff';"
+					/>
+					<br />
+					<p id="errorMessage"></p>
+					<button id="searchButton" type="submit" value="search">
+						Search for Movie
+					</button>
+					|
+					<button
+						id="resetButton"
+						type="reset"
+						onclick="document.getElementById('movies').innerHTML = '';
+						document.getElementById('searchButton').disabled = false;
+						"
+					>
+						Reset
+					</button>
+				</form>
+			</div>
+			<div class="results">
+				<div id="movies"></div>
+			</div>
+		</div>
+	</body>
+</html>
