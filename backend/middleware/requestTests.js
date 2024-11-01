@@ -1,4 +1,4 @@
-function rejectInvalidQueryParams(req, res, next) {
+function rejectInvalidUrlQueryParams(req, res, next) {
 	if (Object.keys(req.query).length > 0) {
 		return res.status(400).json({
 			error: true,
@@ -27,6 +27,6 @@ function requireEmailAndPassword(req, res, next) {
 }
 
 module.exports = {
-	rejectInvalidQueryParams,
+	rejectInvalidUrlQueryParams,
 	requireEmailAndPassword,
 };

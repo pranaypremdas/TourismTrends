@@ -17,11 +17,14 @@ router.get("/helloWorld", (req, res) => {
 // Swagger UI setup
 router.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerOptions));
 
-// GET movies page by title and year
-router.use("/movies/search", require("./movies/search"));
+// Test if the users table exists, if not create it
+router.use("/", require("../middleware/testUsersTableExists"));
 
-// GET movie details by imdbID
-router.use("/movies/data", require("./movies/data"));
+// verify that the user is logged in
+router.use("/", require("../middleware/verifyTokenAndAddUser"));
+
+// GET tourism trends
+router.use("/trends", require("./trends/data"));
 
 // GET movie posters
 router.use("/posters", require("../middleware/loadPosterDir"));

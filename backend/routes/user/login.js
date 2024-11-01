@@ -8,13 +8,13 @@ router.use("/", require("../../middleware/testUsersTableExists"));
 
 // test for valid query parameters and body
 const {
-	rejectInvalidQueryParams,
+	rejectInvalidUrlQueryParams,
 	requireEmailAndPassword,
 } = require("../../middleware/requestTests");
 
 router.post(
 	"/",
-	rejectInvalidQueryParams,
+	rejectInvalidUrlQueryParams,
 	requireEmailAndPassword,
 	async function (req, res, next) {
 		try {
