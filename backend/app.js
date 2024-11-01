@@ -25,10 +25,6 @@ app.use(require("./middleware/loadDatabaseConnection"));
 // add in formidable middleware
 app.use(require("./middleware/incomingForm"));
 
-// use express to show public
-// not implemented in this assignment
-// app.use(express.static("./public"));
-
 // Get routes from routes folder
 app.use("/", require("./routes/index"));
 
