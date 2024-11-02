@@ -21,11 +21,11 @@
 	"tags": [
 		{
 			"name": "Trends",
-			"description": "API queries based on movie title and imdbID."
+			"description": "API queries based tourism trend data."
 		},
 		{
-			"name": "userData",
-			"description": "API queries based on movie poster."
+			"name": "User Data",
+			"description": "API queries based on user data."
 		},
 		{
 			"name": "Authentication",
@@ -36,41 +36,32 @@
 		"/trends": {
 			"get": {
 				"tags": ["Trends"],
-				"description": "Returns a list of movie data. The list is arranged by imdbID, in ascending order.",
-				"operationId": "listAllMatchingMovies",
+				"description": "Returns a list of trend data. The list is arranged by datae, in ascending order.",
+				"operationId": "listAllMatchingTrends",
 				"produces": ["application/json"],
 				"parameters": [
 					{
-						"name": "title",
-						"in": "query",
+						"name": "region",
+						"in": "body",
 						"required": true,
-						"description": "Movie title",
+						"description": "LGA region",
 						"schema": {
 							"type": "string"
 						}
 					},
 					{
-						"name": "year",
-						"in": "query",
+						"name": "dateRange",
+						"in": "body",
 						"required": false,
-						"description": "Movie year",
+						"description": "Date range in the format of an array ['yyyy-mm-dd', 'yyyy-mm-dd']",
 						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "page",
-						"in": "query",
-						"required": false,
-						"description": "Page number",
-						"schema": {
-							"type": "string"
+							"type": "array"
 						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "An array of objects containing Title, Year, imdbID, and Type properties. The resultes are limited to 100 per page. An example of one object in the array is shown below.",
+						"description": "An array of objects containing id, date, ave_historical_occupany, ave_daily_rate, ave_length_stay, ave_booking_window. An example of one object in the array is shown below.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -81,69 +72,44 @@
 											"items": {
 												"type": "object",
 												"properties": {
-													"Title": {
+													"id": {
+														"type": "number"
+													},
+													"date": {
 														"type": "string"
 													},
-													"Year": {
-														"type": "string"
+													"ave_historical_occupancy": {
+														"type": "number"
 													},
-													"imdbID": {
-														"type": "string"
+													"ave_daily_rate": {
+														"type": "number"
 													},
-													"Type": {
-														"type": "string"
+													"ave_length_stay": {
+														"type": "number"
+													},
+													"ave_booking_window": {
+														"type": "number"
 													}
-												}
-											}
-										},
-										"pagination": {
-											"type": "object",
-											"properties": {
-												"total": {
-													"type": "number"
-												},
-												"lastPage": {
-													"type": "number"
-												},
-												"perPage": {
-													"type": "number"
-												},
-												"currentPage": {
-													"type": "number"
-												},
-												"from": {
-													"type": "number"
-												},
-												"to": {
-													"type": "number"
 												}
 											}
 										}
 									}
 								},
-								"example": {
-									"data": [
-										{
-											"Title": "The Matrix",
-											"Year": "1999",
-											"imdbID": "tt0133093",
-											"Type": "movie"
-										}
-									],
-									"pagination": {
-										"total": 1,
-										"lastPage": 1,
-										"perPage": 1,
-										"currentPage": 1,
-										"from": 1,
-										"to": 1
+								"example": [
+									{
+										"id": 1462,
+										"date": "2024-01-01",
+										"ave_historical_occupancy": 0.7529,
+										"ave_daily_rate": 365.8737,
+										"ave_length_of_stay": 5.9678,
+										"ave_booking_window": 78.5895
 									}
-								}
+								]
 							}
 						}
 					},
 					"400": {
-						"description": "Invalid year query parameter. Click on 'Schema' below to see the possible error responses.",
+						"description": "Incorrect region or date Range.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -155,7 +121,7 @@
 									}
 								},
 								"example": {
-									"error": "Invalid year format. Format must be yyyy."
+									"error": "No region provided."
 								}
 							}
 						}

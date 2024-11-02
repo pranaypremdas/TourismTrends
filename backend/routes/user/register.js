@@ -3,77 +3,69 @@ let router = express.Router();
 const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 
-// test for valid query parameters and body
-const { requireEmailAndPassword } = require("../../middleware/requestTests");
-
-const { verifyJwtAndAddUser } = require("../../middleware/verifyJwtAndAddUser");
-
 // POST handler for a user registration
-router.post(
-	"/",
-	verifyJwtAndAddUser,
-	requireEmailAndPassword,
-	async (req, res) => {
-		try {
-			// process body of request
-			let email = req.body.email ? req.body.email[0] : null;
-			let password = req.body.password ? req.body.password[0] : null;
-			let role = req.body.role ? req.body.role[0] : "user";
-			let client_id = req.body.client_id ? req.body.client_id[0] : null;
+router.post("/", async (req, res) => {
+	try {
+		// process body of request
+		let email = req.body.email ? req.body.email[0] : null;
+		let password = req.body.password ? req.body.password[0] : null;
+		let role = req.body.role ? req.body.role[0] : "user";
+		let client_id = req.body.client_id ? req.body.client_id[0] : null;
 
-			// check client_id (have already checked email and password)
-			if (!client_id) {
-				res.status(400).json({
-					error: true,
-					message: "Request body incomplete, client_id is required",
-				});
-				return;
-			}
-
-			// check role of validated user
-			// site admin can create any user
-			// client admin can create users for their client
-			if (
-				(req.user.role !== "admin" && req.user.client_id !== 1) ||
-				(req.user.role !== "client_admin" && req.user.client_id !== client_id)
-			) {
-				res.status(403).json({
-					error: true,
-					message: "You are not authorized to create a user",
-				});
-				return;
-			}
-
-			// check if email already exists
-			let user = await req.db("users").where("email", email);
-			if (user.length > 0) {
-				res.status(409).json({
-					error: true,
-					message: "User already exists",
-				});
-				return;
-			}
-
-			// hash password
-			const hash = await bcrypt.hash(password, 10); // 10 is the salt rounds
-
-			// insert user into database
-			await req.db("users").insert({
-				id: uuidv4(), // obviscate the user id
-				client_id,
-				email,
-				role,
-				hash,
+		// check client_id (have already checked email and password)
+		if (!client_id) {
+			res.status(400).json({
+				error: true,
+				message: "Request body incomplete, client_id is required",
 			});
-
-			res.status(201).json({
-				message: "User created",
-			});
-		} catch (error) {
-			res.fiveHundred(error);
 			return;
 		}
+
+		console.log(req.user);
+
+		// check role of validated user
+		// site admin can create any user
+		// client admin can create users for their client
+		if (
+			(req.user.role !== "admin" && req.user.client_id !== 1) ||
+			(req.user.role !== "client_admin" && req.user.client_id !== client_id)
+		) {
+			res.status(403).json({
+				error: true,
+				message: "You are not authorized to create a user",
+			});
+			return;
+		}
+
+		// check if email already exists
+		let user = await req.db("users").where("email", email);
+		if (user.length > 0) {
+			res.status(409).json({
+				error: true,
+				message: "User already exists",
+			});
+			return;
+		}
+
+		// hash password
+		const hash = await bcrypt.hash(password, 10); // 10 is the salt rounds
+
+		// insert user into database
+		await req.db("users").insert({
+			id: uuidv4(), // obviscate the user id
+			client_id,
+			email,
+			role,
+			hash,
+		});
+
+		res.status(201).json({
+			message: "User created",
+		});
+	} catch (error) {
+		res.fiveHundred(error);
+		return;
 	}
-);
+});
 
 module.exports = router;
