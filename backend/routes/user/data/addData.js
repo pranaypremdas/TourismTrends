@@ -1,23 +1,9 @@
 let express = require("express");
 let router = express.Router();
 let fs = require("fs");
-const {
-	rejectInvalidUrlQueryParams,
-} = require("../../middleware/requestTests");
-
-// verify that the user is logged in
-router.use("/", require("../../middleware/verifyJwtAndAddUser"));
-
-// case where no imdbID
-router.post("/", rejectInvalidUrlQueryParams, async (req, res) => {
-	res.status(400).json({
-		error: true,
-		message: "You must supply an imdbID!",
-	});
-});
 
 // POST movie posters route
-router.post("/:imdbID", rejectInvalidUrlQueryParams, (req, res) => {
+router.post("/", (req, res) => {
 	try {
 		// test for invalid query parameters
 		if (Object.keys(req.query).length > 0) {

@@ -1,8 +1,8 @@
 {
 	"openapi": "3.0.2",
 	"info": {
-		"title": "Demo Movies API",
-		"description": "This is a simple Express API based on the Internet Movie Database (IMDB) API. It provides information on movies. The API endpoints and their usage are described in detail below.",
+		"title": "Tourism Trends API",
+		"description": "The API endpoints and their usage are described in detail below.",
 		"version": "1.0.0",
 		"termsOfService": "http://swagger.io/terms/",
 		"contact": {
@@ -20,11 +20,11 @@
 	],
 	"tags": [
 		{
-			"name": "Movies",
+			"name": "Trends",
 			"description": "API queries based on movie title and imdbID."
 		},
 		{
-			"name": "Posters",
+			"name": "userData",
 			"description": "API queries based on movie poster."
 		},
 		{
@@ -33,9 +33,9 @@
 		}
 	],
 	"paths": {
-		"/movies/search": {
+		"/trends": {
 			"get": {
-				"tags": ["Movies"],
+				"tags": ["Trends"],
 				"description": "Returns a list of movie data. The list is arranged by imdbID, in ascending order.",
 				"operationId": "listAllMatchingMovies",
 				"produces": ["application/json"],
@@ -182,132 +182,7 @@
 				}
 			}
 		},
-		"/movies/data/{imdbID}": {
-			"get": {
-				"tags": ["Movies"],
-				"description": "Use to request movie details and streaming options by imdbID.",
-				"parameters": [
-					{
-						"name": "imdbID",
-						"in": "path",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "A successful response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "object",
-									"properties": {
-										"Title": {
-											"type": "string"
-										},
-										"Year": {
-											"type": "string"
-										},
-										"Runtime": {
-											"type": "string"
-										},
-										"Genre": {
-											"type": "string"
-										},
-										"Director": {
-											"type": "string"
-										},
-										"Writer": {
-											"type": "string"
-										},
-										"Actors": {
-											"type": "string"
-										},
-										"Ratings": {
-											"type": "array",
-											"items": {
-												"type": "object",
-												"properties": {
-													"Source": {
-														"type": "string"
-													},
-													"Value": {
-														"type": "string"
-													}
-												}
-											}
-										}
-									}
-								},
-								"example": {
-									"Title": "The Matrix",
-									"Year": "1999",
-									"Runtime": "136 min",
-									"Genre": "Action, Sci-Fi",
-									"Director": "Lana Wachowski, Lilly Wachowski",
-									"Writer": "Lana Wachowski, Lilly Wachowski",
-									"Actors": "Keanu Reeves, Laurence Fishburne, Carrie-Anne Moss, Hugo Weaving",
-									"Ratings": [
-										{
-											"Source": "Internet Movie Database",
-											"Value": "8.7/10"
-										},
-										{
-											"Source": "Rotten Tomatoes",
-											"Value": "87%"
-										},
-										{
-											"Source": "Metacritic",
-											"Value": "73/100"
-										}
-									]
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Invalid query parameters.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "object",
-									"properties": {
-										"error": {
-											"type": "string"
-										}
-									}
-								},
-								"example": {
-									"error": "Invalid query parameters: year. Query parameters are not permitted."
-								}
-							}
-						}
-					},
-					"500": {
-						"description": "Internal server error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "object",
-									"properties": {
-										"error": {
-											"type": "string"
-										}
-									}
-								},
-								"example": {
-									"error": true,
-									"message": "Internal server error"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/posters/{imdbID}": {
+		"/userdata/get": {
 			"get": {
 				"tags": ["Posters"],
 				"description": "Use to request movie poster by imdbID.",
@@ -368,7 +243,7 @@
 				}
 			}
 		},
-		"/posters/add/{imdbID}": {
+		"/userdata/add": {
 			"post": {
 				"tags": ["Posters"],
 				"description": "Use to add a movie poster by imdbID.",

@@ -1,38 +1,12 @@
 let express = require("express");
 let router = express.Router();
 let fs = require("fs");
-const {
-	rejectInvalidUrlQueryParams,
-} = require("../../middleware/requestTests");
-
-// verify that the user is logged in, and add the user to the request object
-router.use("/", require("../../middleware/verifyJwtAndAddUser"));
-
-// case where no imdbID
-router.get("/", rejectInvalidUrlQueryParams, async (req, res) => {
-	res.status(400).json({
-		error: true,
-		message: "You must supply an imdbID!",
-	});
-});
 
 // GET movie posters
-router.get("/:imdbID", rejectInvalidUrlQueryParams, async (req, res) => {
+router.get("/", async (req, res) => {
 	try {
 		// get the user from req.user object
 		let userEmail = req.user.email;
-
-		// get imdbID from url
-		let imdbID = req.url.split("/")[1];
-
-		// Case where no imdbID
-		if (!imdbID) {
-			res.status(400).json({
-				error: true,
-				message: "You must supply an imdbID!",
-			});
-			return;
-		}
 
 		// get the poster file name from the posterDirList to confirm it exists
 		let posterFileName = userEmail + "_" + imdbID + ".png";
