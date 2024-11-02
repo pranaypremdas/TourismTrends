@@ -1,13 +1,8 @@
 let express = require("express");
 let router = express.Router();
 
-// only needed in this route so not using middleware
-const {
-	rejectInvalidUrlQueryParams,
-} = require("../../middleware/requestTests");
-
 // GET movie details by imdbID
-router.get("/", rejectInvalidUrlQueryParams, async (req, res) => {
+router.get("/", async (req, res) => {
 	try {
 		console.log("req.body", req.body);
 		let region = req.body.region;

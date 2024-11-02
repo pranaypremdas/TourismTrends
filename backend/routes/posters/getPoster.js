@@ -5,11 +5,8 @@ const {
 	rejectInvalidUrlQueryParams,
 } = require("../../middleware/requestTests");
 
-// Test if the users table exists, if not create it
-router.use("/", require("../../middleware/testUsersTableExists"));
-
 // verify that the user is logged in, and add the user to the request object
-router.use("/", require("../../middleware/verifyTokenAndAddUser"));
+router.use("/", require("../../middleware/verifyJwtAndAddUser"));
 
 // case where no imdbID
 router.get("/", rejectInvalidUrlQueryParams, async (req, res) => {

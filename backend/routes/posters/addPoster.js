@@ -5,6 +5,9 @@ const {
 	rejectInvalidUrlQueryParams,
 } = require("../../middleware/requestTests");
 
+// verify that the user is logged in
+router.use("/", require("../../middleware/verifyJwtAndAddUser"));
+
 // case where no imdbID
 router.post("/", rejectInvalidUrlQueryParams, async (req, res) => {
 	res.status(400).json({

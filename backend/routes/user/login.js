@@ -3,18 +3,11 @@ let router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// Test if the users table exists, if not create it
-router.use("/", require("../../middleware/testUsersTableExists"));
-
 // test for valid query parameters and body
-const {
-	rejectInvalidUrlQueryParams,
-	requireEmailAndPassword,
-} = require("../../middleware/requestTests");
+const { requireEmailAndPassword } = require("../../middleware/requestTests");
 
 router.post(
 	"/",
-	rejectInvalidUrlQueryParams,
 	requireEmailAndPassword,
 	async function (req, res, next) {
 		try {
@@ -33,7 +26,18 @@ router.post(
 			}
 
 			// Check if user exists in database
-			let user = await req.db("users").where("email", email);
+			let user = await req
+				.db("users")
+				.select(
+					"users.id",
+					"client_id",
+					"email",
+					"hash",
+					"role",
+					"clients.c_name as client_name"
+				)
+				.join("clients", "users.client_id", "clients.id")
+				.where("email", email);
 			if (user.length === 0) {
 				res.status(401).json({
 					error: true,
@@ -61,7 +65,13 @@ router.post(
 				{
 					exp: createdPlusOneDay,
 					iat: createdDate,
-					user: email,
+					user: {
+						id: user[0].id,
+						email: user[0].email,
+						role: user[0].role || "user",
+						client_id: user[0].client_id,
+						client_name: user[0].client_name,
+					},
 				},
 				process.env.JWT_SECRET
 			);

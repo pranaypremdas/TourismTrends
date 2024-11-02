@@ -5,6 +5,7 @@ module.exports = async (req, res, next) => {
 			console.log("Creating users table!");
 			await req.db.schema.createTable("users", (table) => {
 				table.increments("id").primary();
+				table.string("client_id", 255).notNullable();
 				table.string("email", 255).unique().notNullable();
 				table.string("hash", 60).notNullable();
 				table.timestamp("created_at").defaultTo(req.db.fn.now());

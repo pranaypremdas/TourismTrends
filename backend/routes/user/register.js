@@ -1,33 +1,45 @@
 let express = require("express");
 let router = express.Router();
+const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 
-// Test if the users table exists, if not create it
-router.use("/", require("../../middleware/testUsersTableExists"));
-
 // test for valid query parameters and body
-const {
-	rejectInvalidUrlQueryParams,
-	requireEmailAndPassword,
-} = require("../../middleware/requestTests");
+const { requireEmailAndPassword } = require("../../middleware/requestTests");
+
+const { verifyJwtAndAddUser } = require("../../middleware/verifyJwtAndAddUser");
 
 // POST handler for a user registration
 router.post(
 	"/",
-	rejectInvalidUrlQueryParams,
+	verifyJwtAndAddUser,
 	requireEmailAndPassword,
 	async (req, res) => {
 		try {
 			// process body of request
 			let email = req.body.email ? req.body.email[0] : null;
 			let password = req.body.password ? req.body.password[0] : null;
+			let role = req.body.role ? req.body.role[0] : "user";
+			let client_id = req.body.client_id ? req.body.client_id[0] : null;
 
-			// check for valid username and password
-			if (!email || !password) {
+			// check client_id (have already checked email and password)
+			if (!client_id) {
 				res.status(400).json({
 					error: true,
-					message:
-						"Request body incomplete, both email and password are required",
+					message: "Request body incomplete, client_id is required",
+				});
+				return;
+			}
+
+			// check role of validated user
+			// site admin can create any user
+			// client admin can create users for their client
+			if (
+				(req.user.role !== "admin" && req.user.client_id !== 1) ||
+				(req.user.role !== "client_admin" && req.user.client_id !== client_id)
+			) {
+				res.status(403).json({
+					error: true,
+					message: "You are not authorized to create a user",
 				});
 				return;
 			}
@@ -47,7 +59,10 @@ router.post(
 
 			// insert user into database
 			await req.db("users").insert({
+				id: uuidv4(), // obviscate the user id
+				client_id,
 				email,
+				role,
 				hash,
 			});
 
