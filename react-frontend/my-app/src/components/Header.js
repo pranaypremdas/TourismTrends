@@ -10,8 +10,8 @@ const Header = () => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ml-auto">
             <Nav.Link href="/">Home</Nav.Link>
-            <Nav.Link href="#about">About Us</Nav.Link>
-            <Nav.Link href="#contact">Contact</Nav.Link>
+            <Nav.Link href="dashboard">Dashboard</Nav.Link>
+            <Nav.Link href="contact">Contact</Nav.Link>
             <Nav.Link href="login">Login</Nav.Link>
           </Nav>
         </Navbar.Collapse>
