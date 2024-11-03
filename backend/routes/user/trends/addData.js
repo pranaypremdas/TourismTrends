@@ -96,7 +96,9 @@ router.post("/", async (req, res) => {
 
 		// Check if the user-specific table exists
 		let tableName =
-			req.user.client_id === 1 ? `user_trends_${req.user.client_id}` : `trends`;
+			req.user.client_id === 1 && req.user.role === "admin"
+				? `trends`
+				: `user_trends_${req.user.client_id}`;
 		let tableExists = await req.db.schema.hasTable(tableName);
 
 		if (!tableExists) {

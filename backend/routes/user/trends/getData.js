@@ -16,6 +16,8 @@ let router = express.Router();
  */
 router.post("/", async (req, res) => {
 	try {
+		let region = req.body.region || [];
+
 		// limit to "owner" and "business" client types
 		if ([!"owner", "business"].includes(req.user.client_type)) {
 			res.status(403);
@@ -26,8 +28,12 @@ router.post("/", async (req, res) => {
 			return;
 		}
 
-		// region includes a value greater than 4, return an error
-		if (!Array.isArray(region) || region.some((r) => r > 4)) {
+		// region includes a value greater than 4, or has not values, return an error
+		if (
+			!Array.isArray(region) ||
+			region.length === 0 ||
+			region.some((r) => r > 4)
+		) {
 			res.status(400);
 			res.json({
 				error: true,
@@ -100,7 +106,10 @@ router.post("/", async (req, res) => {
 		);
 
 		// Check if the user-specific table exists
-		let tableName = `user_trends_${req.user.client_id}`;
+		let tableName =
+			req.user.role === "admin" && req.user.client_id === 1 // site admin
+				? `trends`
+				: `user_trends_${req.user.client_id}`;
 		let tableExists = await req.db.schema.hasTable(tableName);
 
 		if (!tableExists) {
