@@ -5,7 +5,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import MainPage from "./components/MainPage";
-import LoginPage from "./components/Login"; // Import your login page component
+import Login from "./components/Login";
+import Contact from "./components/Contact";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   return (
@@ -15,8 +17,12 @@ function App() {
         <div className="main-content">
           <Routes>
             <Route path="/" element={<MainPage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<Login />} />
             {"/login"}
+            <Route path="/contact" element={<Contact />} />
+            {"/contact"}
+            <Route path="/dashboard" element={<Dashboard />} />
+            {"/dashboard"}
           </Routes>
         </div>
         <Footer />
