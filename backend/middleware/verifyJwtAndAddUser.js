@@ -20,35 +20,48 @@ async function verifyJwtAndAddUser(req, res, next) {
 		let user = await req
 			.db("users")
 			.select(
-				"users.id",
-				"client_id",
-				"email",
-				"role",
+				"users.id as id",
+				"users.client_id as client_id",
+				"users.email as email",
+				"users.role as role",
 				"clients.c_name as client_name",
 				"clients.c_type as client_type",
-				"clients.lga_id",
+				req.db.raw("GROUP_CONCAT(client_lgas.lga_id) as lga_ids"),
 				"users.updated_at",
 				"users.created_at"
 			)
 			.join("clients", "users.client_id", "clients.id")
-			.where("email", jwtVerified.user.email);
+			.join("client_lgas", "users.client_id", "client_lgas.client_id")
+			.where("users.email", jwtVerified.user.email)
+			.groupBy(
+				"users.id",
+				"users.client_id",
+				"users.email",
+				"users.role",
+				"clients.c_name",
+				"clients.c_type",
+				"users.updated_at",
+				"users.created_at"
+			)
+			.first();
 
 		// check if the user exists, to confirm the user hasn't been deleted
-		if (user.length === 0) {
+		if (!user) {
 			res.status(401).json({ error: true, message: "Error" });
 			return;
 		}
+
 		// add the user to the request object
 		req.user = {
-			id: user[0].id,
-			email: user[0].email,
-			role: user[0].role,
-			client_id: user[0].client_id,
-			client_name: user[0].client_name,
-			client_type: user[0].client_type,
-			lga_id: user[0].lga_id,
-			updated_at: user[0].updated_at,
-			created_at: user[0].created_at,
+			id: user.id,
+			email: user.email,
+			role: user.role,
+			client_id: user.client_id,
+			client_name: user.client_name,
+			client_type: user.client_type,
+			lga_id: user.lga_ids.split(",").map(Number),
+			updated_at: user.updated_at,
+			created_at: user.created_at,
 			jwt: jwtVerified,
 		};
 	} catch (e) {

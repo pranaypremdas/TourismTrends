@@ -8,13 +8,11 @@ let router = express.Router();
  * @param {Object} req.db - The database connection object.
  * @param {Object} req.user - The user object containing user information.
  * @param {Object} req.body - The body of the request containing the request parameters.
- * @param {Array<string>} req.body.type - The type of data to fetch (optional).
- * @param {Array<string>} req.body.dateRange - The date range to filter the data (optional).
- * @param {Array<string>} req.query.region - The region to filter the data (optional).
+ * @param {Array<object>} req.body.data - The data to add to the database.
  * @param {Object} res - The response object sent to the client.
  * @returns {Promise<Object>} The response object containing the query results.
  */
-router.get("/", async (req, res) => {
+router.post("/", async (req, res) => {
 	try {
 		// limit to "owner" and "business" client types
 		if ([!"owner", "business"].includes(req.user.client_type)) {
@@ -26,123 +24,100 @@ router.get("/", async (req, res) => {
 			return;
 		}
 
-		// Get the region from the body or use the user's region if they are a business member
-		// "owner" lga is "999"
-		let region = req.user.lga_id < 100 ? req.user.lga_id : 9999;
-
-		// region includes a value greater than 4, return an error
-		if (!Array.isArray(region) || region.some((r) => r > 4)) {
+		let data = req.body.data;
+		if (!data || Array.isArray(data) || data.length === 0) {
 			res.status(400);
 			res.json({
 				error: true,
-				message: "Invalid region",
+				message: "Request body incomplete, data is required",
 			});
 			return;
 		}
 
-		// Get the type from the body or use the default
-		let type = req.body.type || [
-			"ave_historical_occupancy",
-			"ave_daily_rate",
-			"ave_length_of_stay",
-			"ave_booking_window",
-		];
-
-		// Check if the type is valid
-		if (
-			!Array.isArray(type) ||
-			type.some(
-				(t) =>
-					![
-						"ave_historical_occupancy",
-						"ave_daily_rate",
-						"ave_length_of_stay",
-						"ave_booking_window",
-					].includes(t)
-			)
-		) {
-			res.status(400);
-			res.json({
-				error: true,
-				message: "Invalid type",
-			});
-			return;
-		}
-
-		// Get the date range from the body or use the default
-		let dateRange = req.body.dateRange || ["2023-01-01", "2024-12-31"];
-
-		// Check if the date range is valid
-		if (dateRange.length !== 2) {
-			res.status(400);
-			res.json({
-				error: true,
-				message: "Invalid date range",
-			});
-			return;
-		}
-
-		// Define the columns to select based on the type
-		let columns = {
-			ave_historical_occupancy: "t.average_historical_occupancy",
-			ave_daily_rate: "t.average_daily_rate",
-			ave_length_of_stay: "t.average_length_of_stay",
-			ave_booking_window: "t.average_booking_window",
-		};
-
-		let selectedColumns = type.reduce(
-			(acc, t) => {
-				if (columns[t]) acc[t] = columns[t];
-				return acc;
-			},
-			{
-				id: "t.id",
-				date: "t.date",
-				lga_id: "t.lga_id",
-				lga_name: "lga.lga_name",
-			}
+		// test the keys of the data object
+		// 1. All Keys Check
+		// 2. Date and lga_id Check
+		// 3. At least one of the four data keys
+		let keysValid = data.every(
+			(d) =>
+				Object.keys(d).every((k) =>
+					[
+						"date",
+						"lga_id",
+						"average_historical_occupany",
+						"average_daily_rate",
+						"average_length_of_stay",
+						"average_booking_window",
+					].includes(k)
+				) &&
+				["date", "lga_id"].every((k) => Object.keys(d).includes(k)) &&
+				[
+					"average_historical_occupancy",
+					"average_daily_rate",
+					"average_length_of_stay",
+					"average_booking_window",
+				].some((k) => Object.keys(d).includes(k))
 		);
 
+		// test the data values
+		// 1. date is a string
+		// 2. lga_id is a number
+		// 3. if the user is an Tourism Trends "owner", any lga_id is allowed
+		// 4. if the user is a Business, only their lga_id is allowed
+		// 5. average_historical_occupancy is a number
+		// 6. average_daily_rate is a number
+		// 7. average_length_of_stay is a number
+		// 8. average_booking_window is a number
+		let dataValid = data.every((d) =>
+			typeof d.date === "string" &&
+			typeof d.lga_id === "number" &&
+			req.user.client_type === "owner"
+				? true
+				: req.user.lga_ids.includes(d.lga_id) &&
+				  d.hasOwnProperty("average_historical_occupancy")
+				? typeof d.average_historical_occupancy === "number"
+				: true && d.hasOwnProperty("average_daily_rate")
+				? typeof d.average_daily_rate === "number"
+				: true && d.hasOwnProperty("average_length_of_stay")
+				? typeof d.average_length_of_stay === "number"
+				: true && d.hasOwnProperty("average_booking_window")
+				? typeof d.average_booking_window === "number"
+				: true
+		);
+
+		if (!keysValid || !dataValid) {
+			res.status(400);
+			res.json({
+				error: true,
+				message: "Invalid data object",
+			});
+			return;
+		}
+
 		// Check if the user-specific table exists
-		let tableName = `user_trends_${req.user.client_id}`;
+		let tableName =
+			req.user.client_id === 1 ? `user_trends_${req.user.client_id}` : `trends`;
 		let tableExists = await req.db.schema.hasTable(tableName);
 
 		if (!tableExists) {
-			res.status(404);
-			res.json({
-				error: true,
-				message: "User-specific data not found",
+			// create the table
+			await req.db.schema.createTable(tableName, (table) => {
+				table.increments("id").primary();
+				table.date("date").notNullable();
+				table.integer("lga_id").notNullable();
+				table.float("average_historical_occupancy").notNullable();
+				table.float("average_daily_rate").notNullable();
+				table.float("average_length_of_stay").notNullable();
+				table.float("average_booking_window").notNullable();
 			});
-			return;
 		}
 
-		let results = await req
-			.db(`${tableName} as t`)
-			.select(selectedColumns)
-			.join("lga", "t.lga_id", "lga.id")
-			.whereIn("lga.id", region)
-			.whereBetween("t.date", dateRange)
-			.groupBy("t.id", "t.date", ...Object.values(selectedColumns));
-
-		// Case where no data found
-		if (!results || results.length === 0) {
-			res.status(400);
-			res.json({
-				error: true,
-				message: "No data found",
-			});
-			return;
-		}
+		// add data to the table
+		await req.db(tableName).insert(data);
 
 		res.json({
 			error: false,
 			message: "Success",
-			query: {
-				region,
-				type,
-				dateRange,
-			},
-			results,
 		});
 	} catch (error) {
 		res.fiveHundred(error);

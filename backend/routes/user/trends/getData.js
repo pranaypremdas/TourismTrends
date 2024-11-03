@@ -10,11 +10,11 @@ let router = express.Router();
  * @param {Object} req.body - The body of the request containing the request parameters.
  * @param {Array<string>} req.body.type - The type of data to fetch (optional).
  * @param {Array<string>} req.body.dateRange - The date range to filter the data (optional).
- * @param {Array<string>} req.query.region - The region to filter the data (optional).
+ * @param {Array<string>} req.data.region - The region to filter the data (optional).
  * @param {Object} res - The response object sent to the client.
  * @returns {Promise<Object>} The response object containing the query results.
  */
-router.get("/", async (req, res) => {
+router.post("/", async (req, res) => {
 	try {
 		// limit to "owner" and "business" client types
 		if ([!"owner", "business"].includes(req.user.client_type)) {
@@ -25,10 +25,6 @@ router.get("/", async (req, res) => {
 			});
 			return;
 		}
-
-		// Get the region from the body or use the user's region if they are a business member
-		// "owner" lga is "999"
-		let region = req.user.lga_id < 100 ? [req.user.lga_id] : [1, 2, 3, 4];
 
 		// region includes a value greater than 4, return an error
 		if (!Array.isArray(region) || region.some((r) => r > 4)) {
@@ -119,8 +115,8 @@ router.get("/", async (req, res) => {
 		let results = await req
 			.db(`${tableName} as t`)
 			.select(selectedColumns)
-			.join("lga", "t.lga_id", "lga.id")
-			.whereIn("lga.id", region)
+			.join("lgas", "t.lga_id", "lgas.id")
+			.whereIn("lgas.id", region)
 			.whereBetween("t.date", dateRange)
 			.groupBy("t.id", "t.date", ...Object.values(selectedColumns));
 

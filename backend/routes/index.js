@@ -40,6 +40,14 @@ router.use(
 	require("./user/trends/addData")
 );
 
+//  DEL user data
+// #TODO: Implement delete user data
+// router.use(
+// 	"/user/trends/delete",
+// 	verifyJwtAndAddUser,
+// 	require("./user/trends/deleteData")
+// );
+
 // POST user registration
 router.use(
 	"/user/register",

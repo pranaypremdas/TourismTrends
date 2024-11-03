@@ -1,5 +1,3 @@
-CREATE DATABASE  IF NOT EXISTS `tourism` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `tourism`;
 -- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
 --
 -- Host: localhost    Database: tourism
@@ -18,6 +16,33 @@ USE `tourism`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `client_lgas`
+--
+
+DROP TABLE IF EXISTS `client_lgas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `client_lgas` (
+  `client_id` int NOT NULL,
+  `lga_id` int NOT NULL,
+  PRIMARY KEY (`client_id`,`lga_id`),
+  KEY `lga_id` (`lga_id`),
+  CONSTRAINT `client_lgas_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `client_lgas_ibfk_2` FOREIGN KEY (`lga_id`) REFERENCES `lgas` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `client_lgas`
+--
+
+LOCK TABLES `client_lgas` WRITE;
+/*!40000 ALTER TABLE `client_lgas` DISABLE KEYS */;
+INSERT INTO `client_lgas` VALUES (1,1),(3,1),(1,2),(4,2),(1,3),(2,3),(1,4),(5,4);
+/*!40000 ALTER TABLE `client_lgas` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `clients`
 --
 
@@ -29,7 +54,6 @@ CREATE TABLE `clients` (
   `c_name` varchar(255) NOT NULL,
   `c_type` varchar(255) NOT NULL,
   `domain` varchar(255) NOT NULL,
-  `lga_id` int NOT NULL,
   `licenses` int NOT NULL,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -43,32 +67,33 @@ CREATE TABLE `clients` (
 
 LOCK TABLES `clients` WRITE;
 /*!40000 ALTER TABLE `clients` DISABLE KEYS */;
-INSERT INTO `clients` VALUES (1,'Tourism Trends','owner','tourismtrends.com',9999,9999,'2024-11-02 02:17:23','2024-11-02 02:17:23'),(2,'Noosa Fun','business','noosafun.com',3,10,'2024-11-02 02:17:23','2024-11-02 02:17:23'),(3,'Test Client','business','testclient.org',1,20,'2024-11-02 02:17:23','2024-11-02 02:17:23'),(4,'Gold Coast City Council','government/tourism board','gccc.gov.au',2,15,'2024-11-02 02:17:23','2024-11-02 02:17:23'),(5,'Visit Whitsundays','government/tourism board','visitwhitsundays.com',4,25,'2024-11-02 02:17:23','2024-11-02 02:17:23');
+INSERT INTO `clients` VALUES (1,'Tourism Trends','owner','tourismtrends.com',9999,'2024-11-03 07:30:58','2024-11-03 07:30:58'),(2,'Noosa Fun','business','noosafun.com',10,'2024-11-03 07:30:58','2024-11-03 07:30:58'),(3,'Cairns Test','business','testclient.org',20,'2024-11-03 07:30:58','2024-11-03 07:30:58'),(4,'Gold Coast City Council','government/tourism board','gccc.gov.au',15,'2024-11-03 07:30:58','2024-11-03 07:30:58'),(5,'Visit Whitsundays','government/tourism board','visitwhitsundays.com',25,'2024-11-03 07:30:58','2024-11-03 07:30:58');
 /*!40000 ALTER TABLE `clients` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `lga`
+-- Table structure for table `lgas`
 --
 
-DROP TABLE IF EXISTS `lga`;
+DROP TABLE IF EXISTS `lgas`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `lga` (
-  `id` int DEFAULT NULL,
-  `lga_name` text,
-  `state` text
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `lgas` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `lga_name` varchar(255) NOT NULL,
+  `state` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `lga`
+-- Dumping data for table `lgas`
 --
 
-LOCK TABLES `lga` WRITE;
-/*!40000 ALTER TABLE `lga` DISABLE KEYS */;
-INSERT INTO `lga` VALUES (1,'Cairns','Queensland'),(2,'Gold Coast','Queensland'),(3,'Noosa','Queensland'),(4,'Whitsunday','Queensland');
-/*!40000 ALTER TABLE `lga` ENABLE KEYS */;
+LOCK TABLES `lgas` WRITE;
+/*!40000 ALTER TABLE `lgas` DISABLE KEYS */;
+INSERT INTO `lgas` VALUES (1,'Cairns','Queensland'),(2,'Gold Coast','Queensland'),(3,'Noosa','Queensland'),(4,'Whitsunday','Queensland');
+/*!40000 ALTER TABLE `lgas` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -112,6 +137,7 @@ CREATE TABLE `users` (
   `email` varchar(255) NOT NULL,
   `role` varchar(255) NOT NULL,
   `hash` varchar(60) NOT NULL,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
@@ -125,7 +151,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('049e222b-aa48-4ea4-9cb5-fc522e5bbe37','1','admin@tourismtrends.com','user','$2b$10$BcWVhQymdsLycIUGw81LVeZydPmNkRm.KCDqAxq2u6.sL7APq/FBC','2024-11-02 02:25:35');
+INSERT INTO `users` VALUES ('e24c3aff-1349-42cd-9dad-67a6cd009401','1','admin@tourismtrends.com','admin','$2b$10$u..sMG4JSEIb/0xiY.pyOuTgIxVxUAdRpmChYgMQKNIoIuFHcYXYO','2024-11-03 03:00:09','2024-11-03 03:00:09');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -138,4 +164,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-02 10:50:40
+-- Dump completed on 2024-11-03 15:49:21

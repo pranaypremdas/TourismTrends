@@ -14,7 +14,7 @@ let router = express.Router();
  * @param {Object} res - The response object sent to the client.
  * @returns {Promise<Object>} The response object containing the query results.
  */
-router.get("/", async (req, res) => {
+router.post("/", async (req, res) => {
 	try {
 		// Get the region from the body or use the user's region if they are a business member
 		let region = req.body.region || [1, 2, 3, 4];
@@ -32,7 +32,7 @@ router.get("/", async (req, res) => {
 		// limit the region to the user's region if they are a business member (client_type = business) lower subscription level
 		// other types are "owner" being TourismTrends admin, and "government/tourism board" being the highest subscription level
 		if (req.user.client_type == "business") {
-			region = req.user.lga_id;
+			region = req.user.lga_ids;
 		}
 
 		// Get the type from the body or use the default
@@ -94,15 +94,15 @@ router.get("/", async (req, res) => {
 				id: "t.id",
 				date: "t.date",
 				lga_id: "t.lga_id",
-				lga_name: "lga.lga_name",
+				lga_name: "lgas.lga_name",
 			}
 		);
 
 		let results = await req
 			.db("trends as t")
 			.select(selectedColumns)
-			.join("lga", "t.lga_id", "lga.id")
-			.whereIn("lga.id", region)
+			.join("lgas", "t.lga_id", "lgas.id")
+			.whereIn("lgas.id", region)
 			.whereBetween("t.date", dateRange)
 			.groupBy("t.id", "t.date", ...Object.values(selectedColumns));
 

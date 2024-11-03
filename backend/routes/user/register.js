@@ -7,7 +7,6 @@ const bcrypt = require("bcrypt");
 router.post("/", async (req, res) => {
 	try {
 		// process body of request
-		console.log("req.body", req.body);
 		let email = req.body.email ? req.body.email[0] : null;
 		let password = req.body.password ? req.body.password[0] : null;
 		let role = req.body.role ? req.body.role[0] : "user";

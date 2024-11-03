@@ -6,7 +6,7 @@
 		"version": "1.0.0",
 		"termsOfService": "http://swagger.io/terms/",
 		"contact": {
-			"email": "n5001927@qut.edu.au"
+			"email": "glenjplayer@gmail.com"
 		},
 		"license": {
 			"name": "Apache 2.0",
@@ -34,7 +34,7 @@
 	],
 	"paths": {
 		"/trends": {
-			"get": {
+			"post": {
 				"tags": ["Trends"],
 				"description": "Returns a list of trend data. The list is arranged by date, in ascending order.",
 				"operationId": "listAllMatchingTrends",
@@ -159,12 +159,16 @@
 									"type": "object",
 									"properties": {
 										"error": {
+											"type": "boolean"
+										},
+										"message": {
 											"type": "string"
 										}
 									}
 								},
 								"example": {
-									"error": "No region provided."
+									"error": true,
+									"message": "No region provided."
 								}
 							}
 						}
@@ -177,6 +181,9 @@
 									"type": "object",
 									"properties": {
 										"error": {
+											"type": "boolean"
+										},
+										"message": {
 											"type": "string"
 										}
 									}
@@ -192,7 +199,7 @@
 			}
 		},
 		"/user/trends/get": {
-			"get": {
+			"post": {
 				"tags": ["User Data"],
 				"description": "Use to request user data, previously imported.",
 				"parameters": [
@@ -306,12 +313,16 @@
 									"type": "object",
 									"properties": {
 										"error": {
+											"type": "boolean"
+										},
+										"message": {
 											"type": "string"
 										}
 									}
 								},
 								"example": {
-									"error": "No region provided."
+									"error": true,
+									"message": "No region provided."
 								}
 							}
 						}
@@ -324,6 +335,9 @@
 									"type": "object",
 									"properties": {
 										"error": {
+											"type": "boolean"
+										},
+										"message": {
 											"type": "string"
 										}
 									}
@@ -344,7 +358,7 @@
 				"description": "Use to add user specific data for comparison to public data.",
 				"parameters": [
 					{
-						"name": "types",
+						"name": "data",
 						"in": "body",
 						"required": true,
 						"schema": {
@@ -358,9 +372,31 @@
 							"schema": {
 								"type": "object",
 								"properties": {
-									"poster": {
-										"type": "string",
-										"format": "binary"
+									"data": {
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"date": {
+													"type": "string"
+												},
+												"lga_id": {
+													"type": "number"
+												},
+												"ave_historical_occupancy": {
+													"type": "number"
+												},
+												"ave_daily_rate": {
+													"type": "number"
+												},
+												"ave_length_stay": {
+													"type": "number"
+												},
+												"ave_booking_window": {
+													"type": "number"
+												}
+											}
+										}
 									}
 								}
 							}
@@ -375,6 +411,9 @@
 								"schema": {
 									"type": "object",
 									"properties": {
+										"error": {
+											"type": "boolean"
+										},
 										"message": {
 											"type": "string"
 										}
@@ -382,7 +421,7 @@
 								},
 								"example": {
 									"error": false,
-									"message": "Poster uploaded successfully."
+									"message": "Success"
 								}
 							}
 						}
@@ -395,30 +434,38 @@
 									"type": "object",
 									"properties": {
 										"error": {
+											"type": "boolean"
+										},
+										"message": {
 											"type": "string"
 										}
 									}
 								},
 								"example": {
-									"error": "Invalid query parameters: year. Query parameters are not permitted."
+									"error": true,
+									"message": "Error."
 								}
 							}
 						}
 					},
 					"500": {
-						"description": "The poster failed to write to the disk",
+						"description": "Internal server error",
 						"content": {
 							"application/json": {
 								"schema": {
 									"type": "object",
 									"properties": {
 										"error": {
+											"type": "boolean"
+										},
+										"message": {
 											"type": "string"
 										}
 									}
 								},
 								"example": {
-									"error": "ENOENT: no such file or directory, open 'res/posters/notExist_mike@gmail.com.png"
+									"error": true,
+									"message": "Internal Server Error"
 								}
 							}
 						}
