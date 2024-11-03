@@ -12,6 +12,9 @@ const {
 // setup 500 error handling (attaches to all routes)
 router.use("*", require("../middleware/error/fiveHundred"));
 
+// reject URL parameters for all routes
+router.use("*", rejectInvalidUrlQueryParams);
+
 // GET Define a simple route to check if our server works
 router.get("/helloWorld", verifyJwtAndAddUser, (_, res) => {
 	res.send("Hello World!");
@@ -21,34 +24,31 @@ router.get("/helloWorld", verifyJwtAndAddUser, (_, res) => {
 router.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerOptions));
 
 // GET tourism trends
-router.use("/trends", verifyJwtAndAddUser, require("./trends/data"));
-
-// reject URL parameters for all routes
-router.use("*", rejectInvalidUrlQueryParams);
+router.use("/trends", verifyJwtAndAddUser, require("./trends/publicData"));
 
 // GET user data
 router.use(
-	"/user/data/get",
+	"/user/trends/get",
 	verifyJwtAndAddUser,
-	require("./user/data/getData")
+	require("./user/trends/getData")
 );
 
 // POST userData
 router.use(
-	"/user/data/add",
+	"/user/trends/add",
 	verifyJwtAndAddUser,
-	require("./user/data/addData")
+	require("./user/trends/addData")
 );
 
-// GET user registration
+// POST user registration
 router.use(
 	"/user/register",
-	verifyJwtAndAddUser,
+	// verifyJwtAndAddUser,
 	requireEmailAndPassword,
 	require("./user/register")
 );
 
-// GET user login
+// POST user login
 router.use("/user/login", requireEmailAndPassword, require("./user/login"));
 
 // Display 404 page

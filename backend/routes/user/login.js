@@ -18,7 +18,9 @@ router.post("/", async function (req, res, next) {
 				"email",
 				"hash",
 				"role",
-				"clients.c_name as client_name"
+				"clients.c_name as client_name",
+				"clients.c_type as client_type",
+				"clients.lga_id"
 			)
 			.join("clients", "users.client_id", "clients.id")
 			.where("email", email);
@@ -55,6 +57,8 @@ router.post("/", async function (req, res, next) {
 					role: user[0].role || "user",
 					client_id: user[0].client_id,
 					client_name: user[0].client_name,
+					client_type: user[0].client_type,
+					lga: user[0].lga_id,
 				},
 			},
 			process.env.JWT_SECRET

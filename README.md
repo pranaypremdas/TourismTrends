@@ -22,7 +22,7 @@ otherwise you'll see that a lot of what we need is already there
 
 1. user login and register routes (I think we only need login)
 2. api-docs route for swagger documentation
-3. a data route (this was a movies query so will need updating)
+3. a data route
 
 This can also server a static frontend but ignore that as we'll server a react frontend on a different port.
 

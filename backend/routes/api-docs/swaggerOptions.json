@@ -36,24 +36,33 @@
 		"/trends": {
 			"get": {
 				"tags": ["Trends"],
-				"description": "Returns a list of trend data. The list is arranged by datae, in ascending order.",
+				"description": "Returns a list of trend data. The list is arranged by date, in ascending order.",
 				"operationId": "listAllMatchingTrends",
 				"produces": ["application/json"],
 				"parameters": [
 					{
 						"name": "region",
 						"in": "body",
-						"required": true,
-						"description": "LGA region",
+						"required": false,
+						"description": "Local Government Area by id in array. Defaults to all regions if not provided for Local Government Memebers, defaults to the region of the user for Business Members.",
 						"schema": {
-							"type": "string"
+							"type": "array"
+						}
+					},
+					{
+						"name": "type",
+						"in": "body",
+						"required": false,
+						"description": "Type of trend data in array. Options are ['ave_historical_occupancy', 'ave_daily_rate', 'ave_length_stay', 'ave_booking_window']. Defaults to all types if not provided.",
+						"schema": {
+							"type": "array"
 						}
 					},
 					{
 						"name": "dateRange",
 						"in": "body",
 						"required": false,
-						"description": "Date range in the format of an array ['yyyy-mm-dd', 'yyyy-mm-dd']",
+						"description": "Date range in the format of an array ['yyyy-mm-dd', 'yyyy-mm-dd']. Defaults to last two years.",
 						"schema": {
 							"type": "array"
 						}
@@ -61,13 +70,33 @@
 				],
 				"responses": {
 					"200": {
-						"description": "An array of objects containing id, date, ave_historical_occupany, ave_daily_rate, ave_length_stay, ave_booking_window. An example of one object in the array is shown below.",
+						"description": "An array of objects containing id, date, lga_id, lga_name, ave_historical_occupany, ave_daily_rate, ave_length_stay, ave_booking_window. An example of one object in the array is shown below.",
 						"content": {
 							"application/json": {
 								"schema": {
 									"type": "object",
 									"properties": {
-										"data": {
+										"error": {
+											"type": "boolean"
+										},
+										"message": {
+											"type": "string"
+										},
+										"query": {
+											"type": "object",
+											"properties": {
+												"region": {
+													"type": "array"
+												},
+												"type": {
+													"type": "array"
+												},
+												"dateRange": {
+													"type": "array"
+												}
+											}
+										},
+										"results": {
 											"type": "array",
 											"items": {
 												"type": "object",
@@ -76,6 +105,12 @@
 														"type": "number"
 													},
 													"date": {
+														"type": "string"
+													},
+													"lga_id": {
+														"type": "number"
+													},
+													"lga_name": {
 														"type": "string"
 													},
 													"ave_historical_occupancy": {
@@ -95,21 +130,29 @@
 										}
 									}
 								},
-								"example": [
-									{
-										"id": 1462,
-										"date": "2024-01-01",
-										"ave_historical_occupancy": 0.7529,
-										"ave_daily_rate": 365.8737,
-										"ave_length_of_stay": 5.9678,
-										"ave_booking_window": 78.5895
-									}
-								]
+								"example": {
+									"error": false,
+									"message": "Success",
+									"query": {
+										"region": [1, 2],
+										"type": ["ave_historical_occupancy"],
+										"dateRange": ["2024-01-01", "2024-01-31"]
+									},
+									"results": [
+										{
+											"id": 1461,
+											"date": "2024-01-01",
+											"lga_id": 1,
+											"lga_name": "Cairns",
+											"ave_historical_occupancy": 0.7554
+										}
+									]
+								}
 							}
 						}
 					},
 					"400": {
-						"description": "Incorrect region or date Range.",
+						"description": "Invalid type, region or dateRange provided.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -148,29 +191,115 @@
 				}
 			}
 		},
-		"/userdata/get": {
+		"/user/trends/get": {
 			"get": {
-				"tags": ["Posters"],
-				"description": "Use to request movie poster by imdbID.",
+				"tags": ["User Data"],
+				"description": "Use to request user data, previously imported.",
 				"parameters": [
 					{
-						"name": "imdbID",
-						"in": "path",
-						"required": true,
+						"name": "type",
+						"in": "body",
+						"required": false,
+						"description": "Type of trend data in array. Options are ['ave_historical_occupancy', 'ave_daily_rate', 'ave_length_stay', 'ave_booking_window']. Defaults to all types if not provided.",
 						"schema": {
-							"type": "string"
+							"type": "array"
+						}
+					},
+					{
+						"name": "dateRange",
+						"in": "body",
+						"required": false,
+						"description": "Date range in the format of an array ['yyyy-mm-dd', 'yyyy-mm-dd']. Defaults to last two years.",
+						"schema": {
+							"type": "array"
 						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "The requested poster",
+						"description": "An array of objects containing id, date, lga_id, lga_name, ave_historical_occupany, ave_daily_rate, ave_length_stay, ave_booking_window. An example of one object in the array is shown below.",
 						"content": {
-							"image/png": {}
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "boolean"
+										},
+										"message": {
+											"type": "string"
+										},
+										"query": {
+											"type": "object",
+											"properties": {
+												"region": {
+													"type": "array"
+												},
+												"type": {
+													"type": "array"
+												},
+												"dateRange": {
+													"type": "array"
+												}
+											}
+										},
+										"results": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "number"
+													},
+													"date": {
+														"type": "string"
+													},
+													"lga_id": {
+														"type": "number"
+													},
+													"lga_name": {
+														"type": "string"
+													},
+													"ave_historical_occupancy": {
+														"type": "number"
+													},
+													"ave_daily_rate": {
+														"type": "number"
+													},
+													"ave_length_stay": {
+														"type": "number"
+													},
+													"ave_booking_window": {
+														"type": "number"
+													}
+												}
+											}
+										}
+									}
+								},
+								"example": {
+									"error": false,
+									"message": "Success",
+									"query": {
+										"region": [1, 2],
+										"type": ["ave_historical_occupancy"],
+										"dateRange": ["2024-01-01", "2024-01-31"]
+									},
+									"results": [
+										{
+											"id": 1461,
+											"date": "2024-01-01",
+											"lga_id": 1,
+											"lga_name": "Cairns",
+											"ave_historical_occupancy": 0.7554
+										}
+									]
+								}
+							}
 						}
 					},
 					"400": {
-						"description": "Invalid query parameters.",
+						"description": "Invalid type, region or dateRange provided.",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -182,7 +311,7 @@
 									}
 								},
 								"example": {
-									"error": "Invalid query parameters: year. Query parameters are not permitted."
+									"error": "No region provided."
 								}
 							}
 						}
@@ -209,17 +338,17 @@
 				}
 			}
 		},
-		"/userdata/add": {
+		"/user/trends/add": {
 			"post": {
-				"tags": ["Posters"],
-				"description": "Use to add a movie poster by imdbID.",
+				"tags": ["User Data"],
+				"description": "Use to add user specific data for comparison to public data.",
 				"parameters": [
 					{
-						"name": "imdbID",
-						"in": "path",
+						"name": "types",
+						"in": "body",
 						"required": true,
 						"schema": {
-							"type": "string"
+							"type": "array"
 						}
 					}
 				],
@@ -240,7 +369,7 @@
 				},
 				"responses": {
 					"200": {
-						"description": "The movie poster has been successfully added.",
+						"description": ".",
 						"content": {
 							"application/json": {
 								"schema": {
