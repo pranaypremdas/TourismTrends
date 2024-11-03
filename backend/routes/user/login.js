@@ -3,24 +3,11 @@ let router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// test for valid query parameters and body
-const { requireEmailAndPassword } = require("../../middleware/requestTests");
-
-router.post("/", requireEmailAndPassword, async function (req, res, next) {
+router.post("/", async function (req, res, next) {
 	try {
-		// process body of request
-		let email = req.body.email ? req.body.email[0] : null;
-		let password = req.body.password ? req.body.password[0] : null;
-
-		// check for a username and password
-		if (!email || !password) {
-			res.status(400).json({
-				error: true,
-				message:
-					"Request body incomplete, both email and password are required",
-			});
-			return;
-		}
+		// process body of request, email and password have already been checked
+		let email = req.body.email[0];
+		let password = req.body.password[0];
 
 		// Check if user exists in database
 		let user = await req
@@ -31,7 +18,9 @@ router.post("/", requireEmailAndPassword, async function (req, res, next) {
 				"email",
 				"hash",
 				"role",
-				"clients.c_name as client_name"
+				"clients.c_name as client_name",
+				"clients.c_type as client_type",
+				"clients.lga_id"
 			)
 			.join("clients", "users.client_id", "clients.id")
 			.where("email", email);
@@ -68,6 +57,8 @@ router.post("/", requireEmailAndPassword, async function (req, res, next) {
 					role: user[0].role || "user",
 					client_id: user[0].client_id,
 					client_name: user[0].client_name,
+					client_type: user[0].client_type,
+					lga: user[0].lga_id,
 				},
 			},
 			process.env.JWT_SECRET
