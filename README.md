@@ -67,13 +67,12 @@ All routes require a valid JWT (except for api-docs)
 
 ## React Frontend
 
-#TODO -- it's current saved in
+### Starting application
+change directory into front-end by `cd front-end/my-app` and run `npm start
+
 /react-frontend/my-app/
 
-can we move it to
-/react-frontend/
-
-should just be cut / paste
+### Routes for front end
 
 / or /home
 - directs user to home page
