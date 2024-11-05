@@ -74,3 +74,15 @@ can we move it to
 /react-frontend/
 
 should just be cut / paste
+
+/ or /home
+- directs user to home page
+
+/dashboard
+- directs user to the dashboard
+
+/contact
+- directs user to the contact page for recieving quotes
+
+/login
+- directs user to the login page
