@@ -68,7 +68,7 @@ All routes require a valid JWT (except for api-docs)
 ## React Frontend
 
 ### Starting application
-change directory into front-end by `cd /react-frontend/my-app/` and run `npm start`
+change directory into front-end by `cd /react-frontend` and run `npm start`
 
 
 ### Routes for front end
