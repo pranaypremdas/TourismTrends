@@ -14,13 +14,13 @@ router.post("/", async function (req, res, next) {
 			.db("users")
 			.select(
 				"users.id",
-				"client_id",
-				"email",
-				"hash",
-				"role",
+				"users.client_id",
+				"users.email",
+				"users.hash",
+				"users.role",
 				"clients.c_name as client_name",
 				"clients.c_type as client_type",
-				"clients.lga_id"
+				"clients.id"
 			)
 			.join("clients", "users.client_id", "clients.id")
 			.where("email", email);
