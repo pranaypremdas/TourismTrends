@@ -14,10 +14,9 @@ async function postRequest(route, body) {
 			throw new Error("Route and body are required");
 		}
 
-		let baseUrl = "https://localhost:5000";
+		let baseUrl = "http://localhost:5000";
 
 		const url = `${baseUrl}/${route}`;
-		console.log(url);
 
 		const options = {
 			method: "POST",
@@ -46,7 +45,7 @@ async function postRequest(route, body) {
 		return [tempResponse, null];
 	} catch (error) {
 		console.error(`Error calling ${route}:`, error.message);
-		return [null, error];
+		return [null, error.message];
 	}
 }
 

@@ -5,12 +5,9 @@ const jwt = require("jsonwebtoken");
 
 router.post("/", async function (req, res, next) {
 	try {
-		console.log("Login request received");
-		console.log(req.body);
-
 		// process body of request, email and password have already been checked
-		let email = req.body.email[0];
-		let password = req.body.password[0];
+		let email = req.body.email;
+		let password = req.body.password;
 
 		// Check if user exists in database
 		let user = await req

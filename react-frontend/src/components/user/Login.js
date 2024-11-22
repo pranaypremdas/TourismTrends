@@ -7,11 +7,12 @@ const Login = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [formError, setFormError] = useState("");
-	const [results, setResults] = useState(null);
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
-		if (!email || !password) {
+		if (!email && !password) {
+			setFormError(null);
+		} else if (!email || !password) {
 			setFormError("Please fill in all fields");
 		} else {
 			setFormError("");
@@ -31,7 +32,10 @@ const Login = () => {
 		if (error) {
 			setFormError(error);
 		} else {
-			setResults(data);
+			// data gets saved to local session storage
+			if (data && data.token) {
+				sessionStorage.setItem("userToken", data);
+			}
 		}
 
 		setLoading(false);
