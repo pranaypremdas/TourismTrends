@@ -1,9 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+
+// Bootstrap Components
 import { Container, Form, Button, Card, Alert } from "react-bootstrap";
 
+// Contexts
+import { UserContext } from "../../contexts/UserContext";
+
+// Custom Components
 import postRequest from "../lib/postRequest";
+import decodeUserToken from "../lib/decodeUserToken";
 
 const Login = () => {
+	let navigate = useNavigate();
+	const { setUser } = useContext(UserContext);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [formError, setFormError] = useState("");
@@ -34,8 +44,10 @@ const Login = () => {
 		} else {
 			// data gets saved to local session storage
 			if (data && data.token) {
-				sessionStorage.setItem("userToken", data);
+				sessionStorage.setItem("userToken", JSON.stringify(data));
+				decodeUserToken(data, setUser);
 			}
+			navigate("/");
 		}
 
 		setLoading(false);
