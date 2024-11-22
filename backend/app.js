@@ -15,7 +15,8 @@ app.use(require("./middleware/logging/logAccessRequest"));
 // Use CORS middleware to allow cross-origin requests
 app.use(
 	cors({
-		origin: "https://localhost:3000",
+		origin: "https://localhost",
+		credentials: true,
 	})
 );
 
