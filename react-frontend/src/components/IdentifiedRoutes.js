@@ -7,6 +7,7 @@ import Footer from "./Footer";
 import MainPage from "./MainPage";
 import Login from "./user/Login";
 import Logout from "./user/Logout";
+import Profile from "./user/Profile";
 import Contact from "./Contact";
 import Dashboard from "./Dashboard";
 
@@ -15,22 +16,22 @@ import { UserContext } from "../contexts/UserContext";
 
 /**
  * IdentifiedRoutes component renders the main application routes based on user authentication status.
- * 
+ *
  * It uses the UserContext to determine if a user is logged in and conditionally renders routes accordingly.
- * 
+ *
  * Routes:
  * - "/" renders the MainPage component.
  * - "/login" renders the Login component if the user is not logged in, otherwise redirects to the main page.
  * - "/logout" renders the Logout component.
  * - "/contact" renders the Contact component.
  * - "/dashboard" renders the Dashboard component if the user is logged in, otherwise redirects to the login page.
- * 
+ *
  * @component
  * @returns {JSX.Element} The IdentifiedRoutes component.
  */
 function IdentifiedRoutes() {
 	const { user } = useContext(UserContext);
-	console.log(user);
+
 	return (
 		<div className="app-container">
 			<Header />
@@ -42,6 +43,7 @@ function IdentifiedRoutes() {
 						element={user ? <Navigate to="/" /> : <Login />}
 					/>
 					<Route path="/logout" element={<Logout />} />
+					<Route path="/profile" element={<Profile />} />
 
 					<Route path="/contact" element={<Contact />} />
 
