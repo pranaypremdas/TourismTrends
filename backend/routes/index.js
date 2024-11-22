@@ -75,6 +75,9 @@ router.use(
 // POST user login
 router.use("/user/login", requireEmailAndPassword, require("./user/login"));
 
+// POST user list
+router.use("/user/list", verifyJwtAndAddUser, require("./user/list"));
+
 // Display 404 page
 router.use("*", require("./404/404"));
 

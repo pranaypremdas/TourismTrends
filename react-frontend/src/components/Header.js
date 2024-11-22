@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Navbar, Nav, Container } from "react-bootstrap";
+import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
 
 import { UserContext } from "../contexts/UserContext";
 
@@ -14,13 +14,48 @@ const Header = () => {
 				<Navbar.Collapse id="basic-navbar-nav">
 					<Nav className="ml-auto">
 						<Nav.Link href="/">Home</Nav.Link>
-						<Nav.Link href="dashboard">Dashboard</Nav.Link>
-						<Nav.Link href="contact">Contact</Nav.Link>
+						<Nav.Link href="/dashboard">Dashboard</Nav.Link>
+						<Nav.Link href="/contact">Contact</Nav.Link>
 
-						{!user && <Nav.Link href="login">Login</Nav.Link>}
-						{user && <Nav.Link href="profile">Profile</Nav.Link>}
+						{!user && <Nav.Link href="/login">Login</Nav.Link>}
+						{user && user.role === "user" && (
+							<Nav.Link href="profile">My Profile</Nav.Link>
+						)}
+						{user && user.role === "client_admin" && (
+							<NavDropdown title="Client Admin" id="admin-nav-dropdown">
+								<NavDropdown.Item href="/admin/users">
+									Manage Users
+								</NavDropdown.Item>
+								<NavDropdown.Item href="/admin/settings">
+									Upload Data
+								</NavDropdown.Item>
+								<NavDropdown.Divider />
+							</NavDropdown>
+						)}
 						{user && user.role === "admin" && (
-							<Nav.Link href="admin">Admin</Nav.Link>
+							<NavDropdown title="Site Admin" id="admin-nav-dropdown">
+								<NavDropdown.Item href="/admin/users">
+									Manage Users
+								</NavDropdown.Item>
+								<NavDropdown.Item href="/admin/clients">
+									Manage Clients
+								</NavDropdown.Item>
+								<NavDropdown.Item href="/admin/settings">
+									Upload Data
+								</NavDropdown.Item>
+								<NavDropdown.Item href="/admin/settings">
+									Settings
+								</NavDropdown.Item>
+								<NavDropdown.Divider />
+								<NavDropdown.Item href="/admin/reports">
+									Reports
+								</NavDropdown.Item>
+								<NavDropdown.Item href="/admin/logs">Logs</NavDropdown.Item>
+								<NavDropdown.Divider />
+								<NavDropdown.Item href="/user/profile">
+									Profile
+								</NavDropdown.Item>
+							</NavDropdown>
 						)}
 					</Nav>
 				</Navbar.Collapse>

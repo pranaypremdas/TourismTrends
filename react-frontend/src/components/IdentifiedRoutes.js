@@ -10,6 +10,7 @@ import Logout from "./user/Logout";
 import Profile from "./user/Profile";
 import Contact from "./Contact";
 import Dashboard from "./Dashboard";
+import ManageUsers from "./admin/ManageUsers";
 
 // Contexts
 import { UserContext } from "../contexts/UserContext";
@@ -43,7 +44,9 @@ function IdentifiedRoutes() {
 						element={user ? <Navigate to="/" /> : <Login />}
 					/>
 					<Route path="/logout" element={<Logout />} />
-					<Route path="/profile" element={<Profile />} />
+					<Route path="/user/profile" element={<Profile />} />
+
+					<Route path="/admin/users" element={<ManageUsers />} />
 
 					<Route path="/contact" element={<Contact />} />
 
