@@ -1,35 +1,33 @@
+import getToken from "./getToken";
+
 /**
- * postRequest is an asynchronous function that sends a POST request to the specified route with the provided body.
+ * getRequest is an asynchronous function that sends a POST request to the specified route with the provided body.
  *
  * @param {string} route - The API endpoint route to send the POST request to.
+ * @param {Boolean} [requireToken] - A boolean that indicates if the request requires a token.
  * @returns {Promise<Array>} A promise that resolves to an array containing the results, and error.
  *
  * @example
- * const [results, error] = postRequest("user/register", { email: "test@test.com", password: "password" });
+ * const [results, error] = getRequest("user/register");
  */
-async function postRequest(route) {
+async function getRequest(route, requireToken = true) {
 	try {
 		if (!route) {
 			throw new Error("Route is required");
 		}
 
-		let userToken = sessionStorage.getItem("userToken");
-		if (!userToken) {
-			throw new Error("Token is required");
-		}
-		let bearerToken = JSON.parse(userToken).token;
-
 		let baseUrl = "http://localhost:5000";
-
 		const url = `${baseUrl}/${route}`;
-
-		const options = {
+		let options = {
 			method: "GET",
 			headers: {
 				"Content-Type": "application/json",
-				Authorization: "Bearer " + bearerToken,
 			},
 		};
+		if (requireToken) {
+			let bearerToken = getToken();
+			options.headers.Authorization = "Bearer " + bearerToken;
+		}
 
 		let response = await fetch(url, options);
 
@@ -54,4 +52,4 @@ async function postRequest(route) {
 	}
 }
 
-export default postRequest;
+export default getRequest;

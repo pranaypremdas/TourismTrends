@@ -27,7 +27,7 @@ const Logout = () => {
 		//delay navigation to allow user context to update
 		setTimeout(() => navigate("/"), 2000);
 		navigate("/");
-	}, [user]);
+	}, [user, setUser, navigate]);
 
 	return (
 		<Container
