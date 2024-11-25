@@ -1,17 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
 // Bootstrap Components
 import { Form, Button, Container, Alert, Card } from "react-bootstrap";
 
 // Custom Components
 import postRequest from "../../lib/postRequest";
+import { UserContext } from "../../../contexts/UserContext";
+import { client } from "../../../../../backend/middleware/knexFile";
 
-const RegisterUser = () => {
+const RegisterUser = ({ clients }) => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [results, setResults] = useState(null);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
+	const { user } = useContext(UserContext);
 
 	const handleRegister = async (e) => {
 		e.preventDefault();
@@ -20,7 +23,7 @@ const RegisterUser = () => {
 
 		const [data, error] = await postRequest("user/register", {
 			email,
-			password,
+			client_id: user.role === "admin" ? client : user.client_id,
 		});
 
 		if (error) {
@@ -59,6 +62,19 @@ const RegisterUser = () => {
 								required
 							/>
 						</Form.Group>
+						{user && user.role === "admin" && (
+							<Form.Group id="client" className="mb-3">
+								<Form.Label>Client</Form.Label>
+								<Form.Select>
+									{clients &&
+										clients.map((client) => (
+											<option key={client.id} value={client.id}>
+												{client.c_name}
+											</option>
+										))}
+								</Form.Select>
+							</Form.Group>
+						)}
 						<Button type="submit" className="w-100" disabled={loading}>
 							{loading ? "Registering..." : "Register"}
 						</Button>

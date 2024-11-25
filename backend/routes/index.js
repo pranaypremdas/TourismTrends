@@ -65,7 +65,11 @@ router.use(
 // );
 
 // GET client list
-router.use("client/list", verifyJwtAndAddUser, require("client/listClients"));
+router.use(
+	"/client/list",
+	verifyJwtAndAddUser,
+	require("./client/listClients")
+);
 
 // POST user registration
 router.use(

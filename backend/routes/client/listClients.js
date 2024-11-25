@@ -16,6 +16,7 @@ router.get("/", async (req, res) => {
 		}
 
 		let clients = await req.db("clients");
+		console.log(clients);
 		if (clients.length > 0) {
 			res.status(200).json({
 				error: false,

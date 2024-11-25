@@ -29,16 +29,14 @@ router.get("/", async (req, res) => {
 			}
 		}
 
-		if (req.user.role === "admin") {
-			let user = await req.db("users");
-			if (user.length > 0) {
-				res.status(200).json({
-					error: false,
-					message: "Success",
-					results: user,
-				});
-				return;
-			}
+		let user = await req.db("users");
+		if (user.length > 0) {
+			res.status(200).json({
+				error: false,
+				message: "Success",
+				results: user,
+			});
+			return;
 		}
 	} catch (error) {
 		res.fiveHundred(error);
