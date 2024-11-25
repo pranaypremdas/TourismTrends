@@ -16,18 +16,28 @@ const RegisterUser = () => {
 			setLoading(true);
 			setError(null);
 
-			const [data, error] = await getRequest("user/list");
+			const [userList, userError] = await getRequest("user/list");
+			const [clientList, clientError] = await getRequest("client/list");
 
-			if (error) {
-				setError(error);
+			if (userError || clientError) {
+				userError ? setError(userError) : setError(clientError);
 			} else {
-				setResults(data);
+				let users = userList.results.map((user) => ({
+					...user,
+					client_name: clientList.results.find(
+						(client) => client.id === user.client_id
+					)[0].c_name,
+				}));
+
+				setResults(users);
 			}
 
 			setLoading(false);
 		};
 		getUsers();
 	}, []);
+
+	console.log(results);
 
 	return (
 		<Container>
@@ -41,6 +51,7 @@ const RegisterUser = () => {
 							<th>Role</th>
 							<th>Client Name</th>
 							<th>Client Type</th>
+							<th>Last Updated</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -51,6 +62,7 @@ const RegisterUser = () => {
 									<td>{user.role}</td>
 									<td>{user.client_name}</td>
 									<td>{user.client_type}</td>
+									<td>{new Date(user.updated_at).toLocaleString()}</td>
 								</tr>
 							))}
 					</tbody>

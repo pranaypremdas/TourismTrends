@@ -4,15 +4,10 @@ let router = express.Router();
 // GET handler for a user list
 router.get("/", async (req, res) => {
 	try {
-		console.log(req.user);
-
 		// check role of validated user
 		// site admin can create any user
 		// client admin can create users for their client
-		if (
-			(req.user.role !== "admin" && req.user.client_id !== "1") ||
-			req.user.role !== "client_admin"
-		) {
+		if (req.user.role !== "admin" && req.user.client_id !== "1") {
 			res.status(403).json({
 				error: true,
 				message: "You are not authorized to view users",

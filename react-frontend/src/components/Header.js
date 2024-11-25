@@ -12,10 +12,10 @@ const Header = () => {
 				<Navbar.Brand href="#home">Tourism Trends</Navbar.Brand>
 				<Navbar.Toggle aria-controls="basic-navbar-nav" />
 				<Navbar.Collapse id="basic-navbar-nav">
-					<Nav className="ml-auto">
+					<Nav className="ml-auto justify-content-end">
 						<Nav.Link href="/">Home</Nav.Link>
 						<Nav.Link href="/dashboard">Dashboard</Nav.Link>
-						<Nav.Link href="/contact">Contact</Nav.Link>
+						{!user && <Nav.Link href="/contact">Pricing</Nav.Link>}
 
 						{!user && <Nav.Link href="/login">Login</Nav.Link>}
 						{user && user.role === "user" && (

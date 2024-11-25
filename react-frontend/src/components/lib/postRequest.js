@@ -20,7 +20,7 @@ async function postRequest(route, body, requireToken = true) {
 		let baseUrl = "http://localhost:5000";
 		const url = `${baseUrl}/${route}`;
 		let options = {
-			method: "GET",
+			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 			},

@@ -64,6 +64,9 @@ router.use(
 // 	require("./client/deleteClient")
 // );
 
+// GET client list
+router.use("client/list", verifyJwtAndAddUser, require("client/listClients"));
+
 // POST user registration
 router.use(
 	"/user/register",
@@ -76,7 +79,7 @@ router.use(
 router.use("/user/login", requireEmailAndPassword, require("./user/login"));
 
 // POST user list
-router.use("/user/list", verifyJwtAndAddUser, require("./user/list"));
+router.use("/user/list", verifyJwtAndAddUser, require("./user/listUsers"));
 
 // LGA list
 router.use("/lga/list", require("./lga/list"));

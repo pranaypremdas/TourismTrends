@@ -34,10 +34,14 @@ const Login = () => {
 		setLoading(true);
 		setFormError(null);
 
-		const [data, error] = await postRequest("user/login", {
-			email,
-			password,
-		});
+		const [data, error] = await postRequest(
+			"user/login",
+			{
+				email,
+				password,
+			},
+			false
+		);
 
 		if (error) {
 			setFormError(error);

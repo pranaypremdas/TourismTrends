@@ -5,6 +5,8 @@ import { Container, Form, Button, Card, Table } from "react-bootstrap";
 
 // Custom Components
 import getRequest from "./lib/getRequest";
+import Error from "./Error/Error";
+import Loading from "./Loading";
 
 const Contact = () => {
 	const [name, setName] = useState("");
@@ -21,10 +23,30 @@ const Contact = () => {
 
 	const userPricing = {
 		1: 25,
+		2: 24,
+		3: 23,
+		4: 22,
 		5: 20,
+		6: 20,
+		7: 20,
+		8: 20,
+		9: 20,
 		10: 18,
+		11: 18,
+		12: 18,
+		13: 18,
+		14: 18,
 		15: 16,
+		16: 16,
+		16: 16,
+		17: 16,
+		18: 16,
+		19: 16,
 		20: 14,
+		21: 14,
+		22: 14,
+		23: 14,
+		24: 14,
 	};
 
 	// For now only logs to console need to impliment logic for adding to database
@@ -33,7 +55,7 @@ const Contact = () => {
 		setSubmitted(true);
 		setPrice({
 			type: businessType === "Government" ? 150 : 99,
-			locations: locations.length > 1 ? (locations.length - 1) * 400 : 0,
+			locations: locations.length > 1 ? (locations.length - 1) * 200 : 0,
 			users: userCount * userPricing[userCount],
 		});
 	};
@@ -68,23 +90,48 @@ const Contact = () => {
 	};
 
 	if (loading) {
-		return (
-			<Container
-				className="d-flex justify-content-center align-items-center"
-				style={{ minHeight: "100vh" }}
-			>
-				<h2>Loading...</h2>
-			</Container>
-		);
+		return <Loading />;
 	}
 
 	if (error) {
+		return <Error message={error} />;
+	}
+
+	if (submitted && userCount >= 25) {
 		return (
 			<Container
-				className="d-flex justify-content-center align-items-center"
+				className="d-flex justify-content-center align-items-top mt-4 mb-4"
 				style={{ minHeight: "100vh" }}
 			>
-				<h2>Error: {error.message}</h2>
+				<Card className="p-4">
+					<Card.Body>
+						<h2 className="text-center mb-4">Contact Us</h2>
+						<Card.Text>
+							<p>Hi {name}, thank you for your interest in our services.</p>
+							We offer custom pricing options for users greater than 20.
+							<br />
+							<Form.Group controlId="formBasicMessage">
+								<Form.Label>Message</Form.Label>
+								<Form.Control
+									as="textarea"
+									rows={3}
+									placeholder="Enter your message here"
+									value={message}
+									onChange={(e) => setMessage(e.target.value)}
+								/>
+							</Form.Group>
+							<br />
+							<Container className="d-flex justify-content-between">
+								<Button variant="primary" onClick={() => setSubmitted(false)}>
+									Edit
+								</Button>
+								<Button variant="success" className="ms-2">
+									Contact Us
+								</Button>
+							</Container>
+						</Card.Text>
+					</Card.Body>
+				</Card>
 			</Container>
 		);
 	}
@@ -92,7 +139,7 @@ const Contact = () => {
 	if (submitted) {
 		return (
 			<Container
-				className="d-flex justify-content-center align-items-center"
+				className="d-flex justify-content-center align-items-top mt-4 mb-4"
 				style={{ minHeight: "100vh" }}
 			>
 				<Card className="p-4">
@@ -100,9 +147,8 @@ const Contact = () => {
 						<h2 className="text-center mb-4">Price Summary</h2>
 
 						<Card.Text>
-							Hi {name}, thank you for your interest in our services.
-							<br />
-							Here's a summary of your request:
+							<p>Hi {name}, thank you for your interest in our services.</p>
+							Here's your price summary:
 							<br />
 							<Table striped bordered hover>
 								<thead>
@@ -116,7 +162,7 @@ const Contact = () => {
 									<tr>
 										<td>Membership Type</td>
 										<td>{businessType}</td>
-										<td>{price.type}</td>
+										<td>${price.type}</td>
 									</tr>
 									<tr>
 										<td>Locations</td>
@@ -132,7 +178,7 @@ const Contact = () => {
 												}, `;
 											})}
 										</td>
-										<td>{price.locations}</td>
+										<td>${price.locations}</td>
 									</tr>
 									<tr>
 										<td>Users</td>
@@ -151,12 +197,21 @@ const Contact = () => {
 							<br />
 							{message && <>Message: {message}</>}
 							<br />
-							<Button variant="primary" onClick={() => setSubmitted(false)}>
-								Edit
-							</Button>
-							<Button variant="success" className="ms-2">
-								Add to Cart
-							</Button>
+							<Container className="d-flex justify-content-between">
+								<Button variant="primary" onClick={() => setSubmitted(false)}>
+									Back
+								</Button>
+								<Button
+									variant="success"
+									className="ms-2"
+									onClick={() => {
+										alert("Thanks for your purchase!");
+										setSubmitted(false);
+									}}
+								>
+									Buy Now
+								</Button>
+							</Container>
 						</Card.Text>
 					</Card.Body>
 				</Card>
@@ -165,7 +220,10 @@ const Contact = () => {
 	}
 
 	return (
-		<Container className="mt-5">
+		<Container
+			className="d-flex justify-content-center align-items-top mt-4 mb-4"
+			style={{ minHeight: "100vh" }}
+		>
 			<Card className="p-4">
 				<Card.Body>
 					<h2 className="text-center mb-4">Get A Quote / Contact Us</h2>
@@ -199,7 +257,7 @@ const Contact = () => {
 							>
 								<option value="">Select an option</option>
 								<option value="Government">
-									Local Government or Tourism Body (single location available)
+									Local Government or Tourism Body (Single Area)
 								</option>
 								<option value="Business">Business (Multiple Areas)</option>
 							</Form.Select>
@@ -207,8 +265,9 @@ const Contact = () => {
 						{businessType === "Business" && (
 							<Form.Group className="mb-3" controlId="formLocationBus">
 								<Form.Label>
-									Select All Locations you want (First location free, $400 /
-									year for all additional locations)
+									Select the Local Government Areas you operate in
+									<br />
+									($200 / year for each additional location)
 								</Form.Label>
 								<Form.Select
 									multiple
@@ -246,33 +305,15 @@ const Contact = () => {
 							<>
 								<Form.Group className="mb-3" controlId="formUserCount">
 									<Form.Label>How many users do you need?</Form.Label>
-									<Form.Select
+									<Form.Control
+										type="number"
 										value={userCount}
 										onChange={(e) => setUserCount(e.target.value)}
 										required
-									>
-										<option value={1}>1 ($25 / user)</option>
-										<option value={5}>5 ($20 / user)</option>
-										<option value={10}>10 ($18 / user)</option>
-										<option value={15}>15 ($16 / user)</option>
-										<option value={20}>20 ($14 / user)</option>
-										<option value={99}>
-											Contact us for other pricing options
-										</option>
-									</Form.Select>
+									></Form.Control>
 								</Form.Group>
 
-								<Form.Group controlId="formBasicMessage">
-									<Form.Label>Message</Form.Label>
-									<Form.Control
-										as="textarea"
-										rows={3}
-										placeholder="Enter your message here"
-										value={message}
-										onChange={(e) => setMessage(e.target.value)}
-									/>
-								</Form.Group>
-								<div className="d-flex justify-content-end">
+								<div className="d-flex justify-content-end mt-4">
 									<Button variant="primary" type="submit" className="w-25">
 										Get Quote
 									</Button>
