@@ -80,24 +80,24 @@ const ManageUsers = () => {
 		<Container>
 			<Row>
 				<Col>
-					<h2>Manage Users</h2>
+					<h2>Manage Users/Clients</h2>
 				</Col>
 			</Row>
 			<Row>
 				<Col>
 					<Tabs defaultActiveKey="clientDetails" id="manage-users-tabs">
 						{user.role === "admin" && (
-							<Tab eventKey="clientList" title="Client List">
+							<Tab eventKey="clientList" title="Clients">
 								<div className="mt-3">
-									<h3>Client List</h3>
+									<h3>Clients</h3>
 									<ClientList clients={clients} />
 								</div>
 							</Tab>
 						)}
 						{user.role === "admin" && (
-							<Tab eventKey="newClientList" title="New Client List">
+							<Tab eventKey="newClientList" title="Pending Clients">
 								<div className="mt-3">
-									<h3>New Client List</h3>
+									<h3>Pending Clients</h3>
 									<NewClientList clients={newClients} />
 								</div>
 							</Tab>

@@ -58,11 +58,11 @@ router.use(
 );
 
 // POST update a client #TODO
-// router.use(
-// 	"/client/update",
-// 	verifyJwtAndAddUser,
-// 	require("./client/updateClient")
-// );
+router.use(
+	"/client/update",
+	verifyJwtAndAddUser,
+	require("./client/updateClient")
+);
 
 // GET active client list
 router.use(
