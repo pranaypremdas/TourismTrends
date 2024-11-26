@@ -16,8 +16,6 @@ async function getRequest(route, requireToken = true) {
 			throw new Error("Route is required");
 		}
 
-		
-
 		let baseUrl = "http://localhost:5000";
 		const url = `${baseUrl}/${route}`;
 		let options = {

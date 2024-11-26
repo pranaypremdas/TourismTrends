@@ -18,10 +18,7 @@ import { Container, Card, Spinner } from "react-bootstrap";
  */
 const Loading = () => {
 	return (
-		<Container
-			className="d-flex justify-content-center align-items-center mt-4 mb-4"
-			style={{ minHeight: "100vh" }}
-		>
+		<Container className="d-flex justify-content-center align-items-center mt-4 mb-4">
 			<Card style={{ width: "100%", maxWidth: "400px" }}>
 				<Card.Body>
 					<Spinner animation="border" role="status">

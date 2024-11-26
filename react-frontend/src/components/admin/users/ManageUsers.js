@@ -8,6 +8,7 @@ import CreateUser from "./CreateUser";
 import UserList from "./UserList";
 import ClientList from "./ClientList";
 import ClientDetails from "./ClientDetails";
+import NewClientList from "./NewClientList";
 import Loading from "../../Loading";
 
 // Custom Components
@@ -18,6 +19,7 @@ const ManageUsers = () => {
 	const { user } = useContext(UserContext);
 	const [users, setUsers] = useState(null);
 	const [clients, setClients] = useState(null);
+	const [newClients, setNewClients] = useState(null);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 
@@ -28,9 +30,18 @@ const ManageUsers = () => {
 
 			const [userList, userError] = await getRequest("user/list");
 			const [clientList, clientError] = await getRequest("client/list");
+			const [newClientList, newClientError] = await getRequest(
+				"client/newList"
+			);
 
-			if (userError || clientError) {
-				setError(userError ? userError.message : clientError.message);
+			if (userError || clientError || newClientError) {
+				setError(
+					userError
+						? userError.message
+						: clientError
+						? clientError.message
+						: newClientError.message
+				);
 			} else {
 				const users = userList.results.map((user) => {
 					const client = clientList.results.find(
@@ -49,9 +60,11 @@ const ManageUsers = () => {
 						).length,
 					};
 				});
+				const newClients = newClientList.results;
 
 				setUsers(users);
 				setClients(clients);
+				setNewClients(newClients);
 			}
 
 			setLoading(false);
@@ -78,6 +91,14 @@ const ManageUsers = () => {
 								<div className="mt-3">
 									<h3>Client List</h3>
 									<ClientList clients={clients} />
+								</div>
+							</Tab>
+						)}
+						{user.role === "admin" && (
+							<Tab eventKey="newClientList" title="New Client List">
+								<div className="mt-3">
+									<h3>New Client List</h3>
+									<NewClientList clients={newClients} />
 								</div>
 							</Tab>
 						)}

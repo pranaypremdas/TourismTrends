@@ -27,21 +27,18 @@ const Header = () => {
 									Manage Users
 								</NavDropdown.Item>
 								<NavDropdown.Item href="/admin/settings">
-									Upload Data
+									Settings
 								</NavDropdown.Item>
 								<NavDropdown.Divider />
+								<NavDropdown.Item href="/user/profile">
+									Profile
+								</NavDropdown.Item>
 							</NavDropdown>
 						)}
 						{user && user.role === "admin" && (
 							<NavDropdown title="Site Admin" id="admin-nav-dropdown">
 								<NavDropdown.Item href="/admin/users">
 									Manage Users
-								</NavDropdown.Item>
-								{/* <NavDropdown.Item href="/admin/clients">
-									Manage Clients
-								</NavDropdown.Item> */}
-								<NavDropdown.Item href="/admin/settings">
-									Upload Data
 								</NavDropdown.Item>
 								<NavDropdown.Item href="/admin/settings">
 									Settings

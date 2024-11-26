@@ -4,51 +4,70 @@ import React, { useEffect, useState } from "react";
 import { Container, Form, Button, Card, Table } from "react-bootstrap";
 
 // Custom Components
-import getRequest from "./lib/getRequest";
-import Error from "./Error/Error";
-import Loading from "./Loading";
+import getRequest from "../lib/getRequest";
+import Error from "../Error/Error";
+import Loading from "../Loading";
+import postRequest from "../lib/postRequest";
+import QuoteTable from "./QuoteTable";
+import userPricing from "./userPricing";
 
 const Contact = () => {
+	// State variables for user input
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [locations, setLocations] = useState([]);
 	const [businessType, setBusinessType] = useState("");
+	const [clientName, setClientName] = useState("");
 	const [userCount, setUserCount] = useState(1);
 	const [message, setMessage] = useState("");
 	const [lgas, setLgas] = useState([]);
+	const [price, setPrice] = useState({ locations: 0, users: 0, type: 0 });
+
+	// State variables for loading, error, and success
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [submitted, setSubmitted] = useState(false);
-	const [price, setPrice] = useState({ locations: 0, users: 0, type: 0 });
+	const [success, setSuccess] = useState(false);
 
-	const userPricing = {
-		1: 25,
-		2: 24,
-		3: 23,
-		4: 22,
-		5: 20,
-		6: 20,
-		7: 20,
-		8: 20,
-		9: 20,
-		10: 18,
-		11: 18,
-		12: 18,
-		13: 18,
-		14: 18,
-		15: 16,
-		16: 16,
-		17: 16,
-		18: 16,
-		19: 16,
-		20: 14,
-		21: 14,
-		22: 14,
-		23: 14,
-		24: 14,
+	// State variable for the quote reference
+	const [quoteRef, setQuoteRef] = useState("");
+
+	// Save the quote to the database
+	const handleSaveQuote = (e) => {
+		e.preventDefault();
+		const saveQuote = async () => {
+			setLoading(true);
+			const newClient = {
+				name,
+				email,
+				clientName,
+				clientType: businessType,
+				lgaIds: locations.join(","),
+				userCount,
+				message,
+				amount: price.type + price.locations + price.users,
+				paymentMethod: "Credit Card",
+			};
+
+			const [response, error] = await postRequest(
+				"client/subscribe",
+				{ newClient: newClient },
+				false
+			);
+
+			if (error) {
+				console.error(error);
+				setError(error);
+			} else {
+				setQuoteRef(response.quoteRef);
+				setSuccess(true);
+				setLoading(false);
+			}
+		};
+		saveQuote();
 	};
 
-	// For now only logs to console need to impliment logic for adding to database
+	// Calculates the price based on the user input
 	const handleGetQuote = (e) => {
 		e.preventDefault();
 		setSubmitted(true);
@@ -96,12 +115,41 @@ const Contact = () => {
 		return <Error message={error} />;
 	}
 
+	if (success) {
+		return (
+			<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
+				<Card className="p-4">
+					<Card.Body>
+						<h2 className="text-center mb-4">Thank You</h2>
+						<Card.Text>
+							Hi {name}, thank you for your interest in our services.
+						</Card.Text>
+						<Card.Text>
+							Your payment reference is: <strong>{quoteRef}</strong>
+						</Card.Text>
+						<QuoteTable
+							quotes={{
+								businessType,
+								locations,
+								userCount,
+								price,
+								message,
+								lgas,
+							}}
+						/>
+						<Card.Text>
+							You will recieve an email shortly with the details of how to
+							login.
+						</Card.Text>
+					</Card.Body>
+				</Card>
+			</Container>
+		);
+	}
+
 	if (submitted && userCount >= 25) {
 		return (
-			<Container
-				className="d-flex justify-content-center align-items-top mt-4 mb-4"
-				style={{ minHeight: "100vh" }}
-			>
+			<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
 				<Card className="p-4">
 					<Card.Body>
 						<h2 className="text-center mb-4">Contact Us</h2>
@@ -124,7 +172,11 @@ const Contact = () => {
 								<Button variant="primary" onClick={() => setSubmitted(false)}>
 									Edit
 								</Button>
-								<Button variant="success" className="ms-2">
+								<Button
+									variant="success"
+									className="ms-2"
+									onClick={(e) => handleSaveQuote(e)}
+								>
 									Contact Us
 								</Button>
 							</Container>
@@ -137,64 +189,22 @@ const Contact = () => {
 
 	if (submitted) {
 		return (
-			<Container
-				className="d-flex justify-content-center align-items-top mt-4 mb-4"
-				style={{ minHeight: "100vh" }}
-			>
+			<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
 				<Card className="p-4">
 					<Card.Body>
 						<h2 className="text-center mb-4">Price Summary</h2>
 
-						<Card.Text>
-							<p>Hi {name}, thank you for your interest in our services.</p>
-							Here's your price summary:
-							<br />
-							<Table striped bordered hover>
-								<thead>
-									<tr>
-										<th>Option</th>
-										<th>Selection</th>
-										<th>Price</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>Membership Type</td>
-										<td>{businessType}</td>
-										<td>${price.type}</td>
-									</tr>
-									<tr>
-										<td>Locations</td>
-										<td>
-											{locations.map((location, index) => {
-												if (index === locations.length - 1) {
-													return `${
-														lgas[Number.parseInt(location) - 1].lga_name
-													}`;
-												}
-												return `${
-													lgas[Number.parseInt(location) - 1].lga_name
-												}, `;
-											})}
-										</td>
-										<td>${price.locations}</td>
-									</tr>
-									<tr>
-										<td>Users</td>
-										<td>
-											{userCount} * ${userPricing[userCount]} / year
-										</td>
-										<td>${price.users}</td>
-									</tr>
-									<tr>
-										<td>Total</td>
-										<td></td>
-										<td>${price.type + price.locations + price.users}</td>
-									</tr>
-								</tbody>
-							</Table>
-							<br />
-							{message && <>Message: {message}</>}
+						<Card.Body>
+							<QuoteTable
+								quotes={{
+									businessType,
+									locations,
+									userCount,
+									price,
+									message,
+									lgas,
+								}}
+							/>
 							<br />
 							<Container className="d-flex justify-content-between">
 								<Button variant="primary" onClick={() => setSubmitted(false)}>
@@ -203,15 +213,12 @@ const Contact = () => {
 								<Button
 									variant="success"
 									className="ms-2"
-									onClick={() => {
-										alert("Thanks for your purchase!");
-										setSubmitted(false);
-									}}
+									onClick={(e) => handleSaveQuote(e)}
 								>
 									Buy Now
 								</Button>
 							</Container>
-						</Card.Text>
+						</Card.Body>
 					</Card.Body>
 				</Card>
 			</Container>
@@ -219,10 +226,7 @@ const Contact = () => {
 	}
 
 	return (
-		<Container
-			className="d-flex justify-content-center align-items-top mt-4 mb-4"
-			style={{ minHeight: "100vh" }}
-		>
+		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
 			<Card className="p-4">
 				<Card.Body>
 					<h2 className="text-center mb-4">Get A Quote / Contact Us</h2>
@@ -261,6 +265,23 @@ const Contact = () => {
 								<option value="Business">Business (Multiple Areas)</option>
 							</Form.Select>
 						</Form.Group>
+						{!businessType && <p>Please select a membership type</p>}
+						{businessType && (
+							<Form.Group className="mb-3" controlId="formLocation">
+								<Form.Label>
+									{businessType === "Business"
+										? "Business"
+										: "Organisation" + " Name"}
+								</Form.Label>
+								<Form.Control
+									type="text"
+									placeholder="Enter your  name"
+									value={clientName}
+									onChange={(e) => setClientName([e.target.value])}
+									required
+								/>
+							</Form.Group>
+						)}
 						{businessType === "Business" && (
 							<Form.Group className="mb-3" controlId="formLocationBus">
 								<Form.Label>
@@ -284,7 +305,7 @@ const Contact = () => {
 						)}
 						{businessType === "Government" && (
 							<Form.Group className="mb-3" controlId="formLocationGov">
-								<Form.Label>Single Local Government Area</Form.Label>
+								<Form.Label>Which Local Government Area</Form.Label>
 								<Form.Select
 									value={locations[0]}
 									onChange={(e) => setLocations([e.target.value])}

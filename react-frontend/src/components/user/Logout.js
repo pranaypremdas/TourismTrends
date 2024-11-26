@@ -30,10 +30,7 @@ const Logout = () => {
 	}, [user, setUser, navigate]);
 
 	return (
-		<Container
-			className="d-flex justify-content-center align-items-center"
-			style={{ minHeight: "100vh" }}
-		>
+		<Container className="d-flex justify-content-center mt-4 mb-4">
 			<h2>Logging out...</h2>
 		</Container>
 	);

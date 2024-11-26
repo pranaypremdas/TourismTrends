@@ -58,10 +58,7 @@ const Login = () => {
 	};
 
 	return (
-		<Container
-			className="d-flex justify-content-center align-items-center"
-			style={{ minHeight: "100vh" }}
-		>
+		<Container className="d-flex justify-content-center mt-4 mb-4">
 			<Card style={{ width: "100%", maxWidth: "400px" }}>
 				<Card.Body>
 					<h2 className="text-center mb-4">Login</h2>

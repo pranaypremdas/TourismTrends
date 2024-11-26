@@ -47,8 +47,15 @@ router.use(
 	require("./user/trends/deleteData")
 );
 
-// POST add a new client #TODO
-// router.use("/client/add", verifyJwtAndAddUser, require("./client/addClient"));
+// POST a new client can subscribe
+router.use("/client/subscribe", require("./client/newClient.js"));
+
+// GET list of new clients
+router.use(
+	"/client/newList",
+	verifyJwtAndAddUser,
+	require("./client/listNewClients.js")
+);
 
 // POST update a client #TODO
 // router.use(
@@ -57,14 +64,7 @@ router.use(
 // 	require("./client/updateClient")
 // );
 
-// POST delete a client #TODO
-// router.use(
-// 	"/client/delete",
-// 	verifyJwtAndAddUser,
-// 	require("./client/deleteClient")
-// );
-
-// GET client list
+// GET active client list
 router.use(
 	"/client/list",
 	verifyJwtAndAddUser,

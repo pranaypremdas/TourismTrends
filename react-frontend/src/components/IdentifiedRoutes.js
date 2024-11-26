@@ -8,7 +8,7 @@ import MainPage from "./MainPage";
 import Login from "./user/Login";
 import Logout from "./user/Logout";
 import Profile from "./user/Profile";
-import Contact from "./Contact";
+import Contact from "./Contact/Contact";
 import Dashboard from "./Dashboard";
 import ManageUsers from "./admin/users/ManageUsers";
 
