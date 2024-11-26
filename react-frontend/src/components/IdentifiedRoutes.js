@@ -10,7 +10,7 @@ import Logout from "./user/Logout";
 import Profile from "./user/Profile";
 import Contact from "./Contact";
 import Dashboard from "./Dashboard";
-import ManageUsers from "./admin/ManageUsers";
+import ManageUsers from "./admin/users/ManageUsers";
 
 // Contexts
 import { UserContext } from "../contexts/UserContext";
@@ -39,21 +39,22 @@ function IdentifiedRoutes() {
 			<div className="main-content">
 				<Routes>
 					<Route path="/" element={<MainPage />} />
-					<Route
-						path="/login"
-						element={user ? <Navigate to="/" /> : <Login />}
-					/>
 					<Route path="/logout" element={<Logout />} />
-					<Route path="/user/profile" element={<Profile />} />
-
-					<Route path="/admin/users" element={<ManageUsers />} />
-
 					<Route path="/contact" element={<Contact />} />
+					{!user && <Route path="/login" element={<Login />} />}
+					{user && <Route path="/user/profile" element={<Profile />} />}
+
+					{user && user.role === "admin" && (
+						<>
+							<Route path="/admin/users" element={<ManageUsers />} />
+						</>
+					)}
 
 					<Route
 						path="/dashboard"
 						element={user ? <Dashboard /> : <Navigate to="/login" />}
 					/>
+					<Route path="*" element={<Navigate to="/" />} />
 				</Routes>
 			</div>
 			<Footer />

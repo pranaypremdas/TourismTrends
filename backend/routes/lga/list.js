@@ -10,6 +10,7 @@ router.get("/", async (req, res) => {
 				error: false,
 				message: "Success",
 				results: lgas,
+				retrivedAt: new Date().toLocaleString(),
 			});
 			return;
 		}

@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 
 // Bootstrap Components
 import { Container, Row, Col, Tabs, Tab, Alert } from "react-bootstrap";
 
 // Custom Components
-import RegisterUser from "./users/RegisterUser";
-import UserList from "./users/UserList";
-import Loading from "../Loading";
+import CreateUser from "./CreateUser";
+import UserList from "./UserList";
+import ClientList from "./ClientList";
+import ClientDetails from "./ClientDetails";
+import Loading from "../../Loading";
 
 // Custom Components
-import getRequest from "../lib/getRequest";
+import getRequest from "../../lib/getRequest";
+import { UserContext } from "../../../contexts/UserContext";
 
 const ManageUsers = () => {
+	const { user } = useContext(UserContext);
 	const [users, setUsers] = useState(null);
 	const [clients, setClients] = useState(null);
 	const [error, setError] = useState(null);
@@ -37,8 +41,17 @@ const ManageUsers = () => {
 						client_name: client ? client.c_name : "Unknown",
 					};
 				});
+				const clients = clientList.results.map((client) => {
+					return {
+						...client,
+						user_count: users.filter(
+							(user) => user.client_id === client.id.toString()
+						).length,
+					};
+				});
+
 				setUsers(users);
-				setClients(clientList.results);
+				setClients(clients);
 			}
 
 			setLoading(false);
@@ -60,16 +73,32 @@ const ManageUsers = () => {
 			<Row>
 				<Col>
 					<Tabs defaultActiveKey="clientDetails" id="manage-users-tabs">
+						{user.role === "admin" && (
+							<Tab eventKey="clientList" title="Client List">
+								<div className="mt-3">
+									<h3>Client List</h3>
+									<ClientList clients={clients} />
+								</div>
+							</Tab>
+						)}
+						{user.role === "client_admin" && (
+							<Tab eventKey="clientDetails" title="Client Details">
+								<div className="mt-3">
+									<h3>Client Details</h3>
+									<ClientDetails clients={clients} />
+								</div>
+							</Tab>
+						)}
 						<Tab eventKey="userList" title="User List">
 							<div className="mt-3">
 								<h3>User List</h3>
 								<UserList users={users} />
 							</div>
 						</Tab>
-						<Tab eventKey="registerNewUser" title="Register New User">
+						<Tab eventKey="createNewUser" title="Register New User">
 							<div className="mt-3">
-								<h3>Register New User</h3>
-								<RegisterUser clients={clients} />
+								<h3>Create New User</h3>
+								<CreateUser clients={clients} />
 							</div>
 						</Tab>
 					</Tabs>

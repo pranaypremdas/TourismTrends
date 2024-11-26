@@ -6,15 +6,15 @@ import { Form, Button, Container, Alert, Card } from "react-bootstrap";
 // Custom Components
 import postRequest from "../../lib/postRequest";
 import { UserContext } from "../../../contexts/UserContext";
-import { client } from "../../../../../backend/middleware/knexFile";
 
-const RegisterUser = ({ clients }) => {
+const CreateUser = ({ clients }) => {
+	const { user } = useContext(UserContext);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [results, setResults] = useState(null);
+	const [client, setClient] = useState(user ? user.client_id : null);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
-	const { user } = useContext(UserContext);
 
 	const handleRegister = async (e) => {
 		e.preventDefault();
@@ -37,12 +37,11 @@ const RegisterUser = ({ clients }) => {
 
 	return (
 		<Container
-			className="d-flex justify-content-center align-items-center"
+			className="d-flex justify-content-center mt-4 mb-4"
 			style={{ minHeight: "100vh" }}
 		>
 			<Card style={{ width: "100%", maxWidth: "400px" }}>
 				<Card.Body>
-					<h2 className="text-center mb-4">Register New User</h2>
 					<Form onSubmit={handleRegister}>
 						<Form.Group id="email" className="mb-3">
 							<Form.Label>Email</Form.Label>
@@ -65,7 +64,11 @@ const RegisterUser = ({ clients }) => {
 						{user && user.role === "admin" && (
 							<Form.Group id="client" className="mb-3">
 								<Form.Label>Client</Form.Label>
-								<Form.Select>
+								<Form.Select
+									value={client}
+									onChange={(e) => setClient(e.target.value)}
+								>
+									<option value={null}>Select a client</option>
 									{clients &&
 										clients.map((client) => (
 											<option key={client.id} value={client.id}>
@@ -95,4 +98,4 @@ const RegisterUser = ({ clients }) => {
 	);
 };
 
-export default RegisterUser;
+export default CreateUser;

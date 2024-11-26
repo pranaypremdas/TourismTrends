@@ -37,9 +37,9 @@ const Header = () => {
 								<NavDropdown.Item href="/admin/users">
 									Manage Users
 								</NavDropdown.Item>
-								<NavDropdown.Item href="/admin/clients">
+								{/* <NavDropdown.Item href="/admin/clients">
 									Manage Clients
-								</NavDropdown.Item>
+								</NavDropdown.Item> */}
 								<NavDropdown.Item href="/admin/settings">
 									Upload Data
 								</NavDropdown.Item>

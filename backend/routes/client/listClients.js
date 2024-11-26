@@ -14,16 +14,29 @@ router.get("/", async (req, res) => {
 			});
 			return;
 		}
-
-		let clients = await req.db("clients");
-		console.log(clients);
-		if (clients.length > 0) {
-			res.status(200).json({
-				error: false,
-				message: "Success",
-				results: clients,
-			});
-			return;
+		if (req.user.role === "client_admin") {
+			let clients = await req.db("clients").where("id", req.user.client_id);
+			if (clients.length > 0) {
+				res.status(200).json({
+					error: false,
+					message: "Success",
+					results: clients,
+					retrievedAt: new Date().toLocaleString(),
+				});
+				return;
+			}
+		}
+		if (req.user.role === "admin") {
+			let clients = await req.db("clients");
+			if (clients.length > 0) {
+				res.status(200).json({
+					error: false,
+					message: "Success",
+					results: clients,
+					retrievedAt: new Date().toLocaleString(),
+				});
+				return;
+			}
 		}
 	} catch (error) {
 		res.fiveHundred(error);

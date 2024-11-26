@@ -21,8 +21,7 @@ router.post("/", async (req, res) => {
 
 		// region includes a value greater than 4, return an error
 		if (!Array.isArray(region) || region.some((r) => r > 4)) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: "Invalid region",
 			});
@@ -56,8 +55,7 @@ router.post("/", async (req, res) => {
 					].includes(t)
 			)
 		) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: "Invalid type",
 			});
@@ -69,8 +67,7 @@ router.post("/", async (req, res) => {
 
 		// Check if the date range is valid
 		if (dateRange.length !== 2) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: "Invalid date range",
 			});
@@ -108,15 +105,14 @@ router.post("/", async (req, res) => {
 
 		// Case where no data found
 		if (!results || results.length === 0) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: "No region found",
 			});
 			return;
 		}
 
-		res.json({
+		res.status(200).json({
 			error: false,
 			message: "Success",
 			query: {
@@ -125,6 +121,7 @@ router.post("/", async (req, res) => {
 				dateRange,
 			},
 			results,
+			retrievedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {
 		res.fiveHundred(error);

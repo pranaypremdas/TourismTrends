@@ -16,8 +16,7 @@ router.post("/", async (req, res) => {
 	try {
 		// limit to "owner" and "business" client types
 		if ([!"owner", "business"].includes(req.user.client_type)) {
-			res.status(403);
-			res.json({
+			res.status(403).json({
 				error: true,
 				message: `Wrong client type, you are a ${req.user.client_type} client`,
 			});
@@ -26,8 +25,7 @@ router.post("/", async (req, res) => {
 
 		let data = req.body.data;
 		if (!data || Array.isArray(data) || data.length === 0) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: "Request body incomplete, data is required",
 			});
@@ -86,8 +84,7 @@ router.post("/", async (req, res) => {
 		);
 
 		if (!keysValid || !dataValid) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: "Invalid data object",
 			});
@@ -115,11 +112,16 @@ router.post("/", async (req, res) => {
 		}
 
 		// add data to the table
-		await req.db(tableName).insert(data);
+		let response = await req.db(tableName).insert(data);
 
-		res.json({
+		res.status(200).json({
 			error: false,
 			message: "Success",
+			query: {
+				toDelete,
+			},
+			addedCount: response,
+			addedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {
 		res.fiveHundred(error);

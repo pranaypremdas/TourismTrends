@@ -16,8 +16,7 @@ router.post("/", async (req, res) => {
 	try {
 		// limit to "owner" and "business" client types
 		if ([!"owner", "business"].includes(req.user.client_type)) {
-			res.status(403);
-			res.json({
+			res.status(403).json({
 				error: true,
 				message: `Wrong client type, you are a ${req.user.client_type} client`,
 			});
@@ -26,8 +25,7 @@ router.post("/", async (req, res) => {
 
 		let toDelete = req.body.toDelete;
 		if (!toDelete || Array.isArray(toDelete) || toDelete.length === 0) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: "Request body incomplete, toDelete is required",
 			});
@@ -43,8 +41,7 @@ router.post("/", async (req, res) => {
 		let dataValid = data.every((d) => typeof d.id === "number");
 
 		if (!keysValid || !dataValid) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: "Invalid toDelete object",
 			});
@@ -59,8 +56,7 @@ router.post("/", async (req, res) => {
 		let tableExists = await req.db.schema.hasTable(tableName);
 
 		if (!tableExists) {
-			res.status(400);
-			res.json({
+			res.status(400).json({
 				error: true,
 				message: `No data to delete`,
 			});
@@ -70,13 +66,14 @@ router.post("/", async (req, res) => {
 		// Delete the data
 		let response = await req.db(tableName).whereIn("id", toDelete).del();
 
-		res.json({
+		res.status(200).json({
 			error: false,
 			message: "Success",
 			query: {
 				toDelete,
 			},
 			deleteCount: response,
+			deletedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {
 		res.fiveHundred(error);

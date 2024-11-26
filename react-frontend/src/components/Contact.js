@@ -49,7 +49,7 @@ const Contact = () => {
 	};
 
 	// For now only logs to console need to impliment logic for adding to database
-	const handleSubmit = (e) => {
+	const handleGetQuote = (e) => {
 		e.preventDefault();
 		setSubmitted(true);
 		setPrice({
@@ -226,7 +226,7 @@ const Contact = () => {
 			<Card className="p-4">
 				<Card.Body>
 					<h2 className="text-center mb-4">Get A Quote / Contact Us</h2>
-					<Form onSubmit={handleSubmit}>
+					<Form onSubmit={handleGetQuote}>
 						<Form.Group className="mb-3" controlId="formName">
 							<Form.Label>Name</Form.Label>
 							<Form.Control

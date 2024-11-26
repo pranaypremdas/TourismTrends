@@ -3,7 +3,7 @@ import React from "react";
 // Bootstrap Components
 import { Container, Table } from "react-bootstrap";
 
-const RegisterUser = ({ users }) => {
+const UserList = ({ users }) => {
 	return (
 		<Container>
 			{users && users.length > 0 && (
@@ -33,4 +33,4 @@ const RegisterUser = ({ users }) => {
 	);
 };
 
-export default RegisterUser;
+export default UserList;
