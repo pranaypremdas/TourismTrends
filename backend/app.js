@@ -12,11 +12,20 @@ app.use(helmet());
 // Use morgan middleware for logging
 app.use(require("./middleware/logging/logAccessRequest"));
 
-// Use CORS middleware to allow cross-origin requests
+// Define allowed origins in an array
+const allowedOrigins = ["http://localhost:3000", "https://localhost:3000"];
+
 app.use(
-	cors({
-		origin: "https://localhost:3000",
-	})
+  cors({
+    origin: function (origin, callback) {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        // Allow requests from both HTTP and HTTPS origins
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  })
 );
 
 // add in knex middleware
@@ -30,13 +39,13 @@ app.use("/", require("./routes/index"));
 
 // error handler
 app.use(function (err, req, res, next) {
-	// set locals, only providing error in development
-	res.locals.message = err.message;
-	res.locals.error = req.app.get("env") === "development" ? err : {};
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get("env") === "development" ? err : {};
 
-	// render the error page
-	res.status(err.status || 500);
-	res.render("error");
+  // render the error page
+  res.status(err.status || 500);
+  res.render("error");
 });
 
 module.exports = app;
