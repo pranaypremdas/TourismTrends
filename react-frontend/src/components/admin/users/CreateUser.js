@@ -9,8 +9,8 @@ import { UserContext } from "../../../contexts/UserContext";
 
 const CreateUser = ({ clients }) => {
 	const { user } = useContext(UserContext);
+	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
 	const [results, setResults] = useState(null);
 	const [client, setClient] = useState(user ? user.client_id : null);
 	const [error, setError] = useState(null);
@@ -22,6 +22,7 @@ const CreateUser = ({ clients }) => {
 		setError(null);
 
 		const [data, error] = await postRequest("user/register", {
+			name,
 			email,
 			client_id: user.role === "admin" ? client : user.client_id,
 		});
@@ -40,21 +41,21 @@ const CreateUser = ({ clients }) => {
 			<Card style={{ width: "100%", maxWidth: "400px" }}>
 				<Card.Body>
 					<Form onSubmit={handleRegister}>
+						<Form.Group id="name" className="mb-3">
+							<Form.Label>Name</Form.Label>
+							<Form.Control
+								type="text"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								required
+							/>
+						</Form.Group>
 						<Form.Group id="email" className="mb-3">
 							<Form.Label>Email</Form.Label>
 							<Form.Control
 								type="email"
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
-								required
-							/>
-						</Form.Group>
-						<Form.Group id="password" className="mb-3">
-							<Form.Label>Password</Form.Label>
-							<Form.Control
-								type="password"
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
 								required
 							/>
 						</Form.Group>

@@ -31,7 +31,7 @@ const Header = () => {
 								</NavDropdown.Item>
 								<NavDropdown.Divider />
 								<NavDropdown.Item href="/user/profile">
-									Profile
+									My Profile
 								</NavDropdown.Item>
 							</NavDropdown>
 						)}
@@ -47,10 +47,9 @@ const Header = () => {
 								<NavDropdown.Item href="/admin/reports">
 									Reports
 								</NavDropdown.Item>
-								<NavDropdown.Item href="/admin/logs">Logs</NavDropdown.Item>
 								<NavDropdown.Divider />
 								<NavDropdown.Item href="/user/profile">
-									Profile
+									My Profile
 								</NavDropdown.Item>
 							</NavDropdown>
 						)}

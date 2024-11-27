@@ -86,15 +86,14 @@ router.get("/", async (req, res) => {
 					"created_at"
 				)
 				.where("client_id", req.user.client_id);
-			if (user.length > 0) {
-				res.status(200).json({
-					error: false,
-					message: "Success",
-					results: user,
-					retrivedAt: new Date().toLocaleString(),
-				});
-				return;
-			}
+
+			res.status(200).json({
+				error: false,
+				message: "Success",
+				results: user,
+				retrivedAt: new Date().toLocaleString(),
+			});
+			return;
 		}
 
 		if (req.user.role === "admin") {
@@ -109,15 +108,14 @@ router.get("/", async (req, res) => {
 					"updated_at",
 					"created_at"
 				);
-			if (user.length > 0) {
-				res.status(200).json({
-					error: false,
-					message: "Success",
-					results: user,
-					retrivedAt: new Date().toLocaleString(),
-				});
-				return;
-			}
+
+			res.status(200).json({
+				error: false,
+				message: "Success",
+				results: user,
+				retrivedAt: new Date().toLocaleString(),
+			});
+			return;
 		}
 	} catch (error) {
 		res.fiveHundred(error);

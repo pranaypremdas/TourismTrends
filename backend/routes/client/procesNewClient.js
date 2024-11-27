@@ -2,6 +2,7 @@ let express = require("express");
 let router = express.Router();
 const bcrypt = require("bcrypt");
 const generator = require("generate-password");
+const { v4: uuidv4 } = require("uuid");
 
 /**
  * @swagger
@@ -112,8 +113,8 @@ const generator = require("generate-password");
  */
 router.post("/", async (req, res) => {
 	try {
-		const createClient = req.body.createClient;
-		if (!createClient || !typeof createClient === "object") {
+		const newClientId = req.body.new_client_id;
+		if (!newClientId) {
 			res.status(400).json({
 				error: true,
 				message: "Request body incomplete",
@@ -121,20 +122,21 @@ router.post("/", async (req, res) => {
 			return;
 		}
 
-		// test the keys of the object
-		if (!Object.keys(createClient).includes("client_id")) {
+		// retrieve the client data from newClient table
+		const client = await req.db("new_clients").where("id", newClientId).first();
+
+		// check if the user exists
+		const userExists = await req
+			.db("users")
+			.where("email", client.email)
+			.first();
+		if (userExists) {
 			res.status(400).json({
 				error: true,
-				message: "Invalid object",
+				message: "User already exists",
 			});
 			return;
 		}
-
-		// retrieve the client data from newClient table
-		const client = await req
-			.db("new_clients")
-			.where("id", createClient.client_id)
-			.first();
 
 		// generate random password and hash it
 		const password = generator.generate({
@@ -151,25 +153,47 @@ router.post("/", async (req, res) => {
 		};
 
 		// add data to the tables
+		let [insertedClientId] = await req.db("clients").insert({ ...newClient });
+
 		let insertedClient = await req
 			.db("clients")
-			.insert(newClient)
-			.returning("*");
+			.where("id", insertedClientId)
+			.first();
 
+		let newUserId = uuidv4();
 		let newUser = {
-			client_id: insertedClient.id,
+			id: newUserId,
+			client_id: insertedClientId,
 			email: client.email,
-			name: client.name,
 			role: "client_admin",
 			hash: hash,
+			name: client.name,
 		};
-		let insertedUser = await req.db("users").insert(newUser).returning("*");
+		await req.db("users").insert({ ...newUser });
+
+		let lgaData = client.lgaIds.includes(",")
+			? client.lgaIds.split(",")
+			: [client.lgaIds].map((lga) => {
+					return {
+						lga_id: lga,
+						client_id: insertedClientId,
+					};
+			  });
+
+		await req.db("client_lgas").insert(lgaData);
+
+		let insertedUser = await req.db("users").where("id", newUserId).first();
+
+		await req.db("new_clients").where("id", newClientId).update({
+			paymentMethod: "credit card",
+			status: "registered",
+		});
 
 		res.status(200).json({
 			error: false,
 			message: "Success",
 			client: insertedClient,
-			user: insertedUser,
+			user: { ...insertedUser, password },
 			addedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {

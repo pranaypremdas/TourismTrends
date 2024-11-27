@@ -13,7 +13,7 @@
  * @param {Function} next - The next middleware function.
  */
 async function isSiteAdmin(req, res, next) {
-	if (req.user.role !== "admin" && req.user.client_id !== "1") {
+	if (req.user.role !== "admin" && req.user.client_id !== 1) {
 		res.status(403).json({
 			error: true,
 			message: "You are not authorized",

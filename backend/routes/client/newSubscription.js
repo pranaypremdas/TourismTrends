@@ -196,12 +196,15 @@ router.post("/", async (req, res) => {
 		}
 
 		// add data to the table
-		let insertClient = {
+		let newClientData = {
+			id: uuidv4(),
 			name: newClient.name,
 			email: newClient.email,
 			c_name: newClient.clientName,
 			c_type: newClient.clientType,
-			lgaIds: newClient.lgaIds.join(","),
+			lgaIds: Array.isArray(newClient.lgaIds)
+				? newClient.lgaIds.join(",")
+				: newClient.lgaIds,
 			licenses: newClient.userCount,
 			message: newClient.message,
 			amount: newClient.amount,
@@ -209,15 +212,16 @@ router.post("/", async (req, res) => {
 			quoteRef: `QRef-${uuidv4().split("-")[0]}`,
 		};
 
+		let [insertedClientId] = await req.db("new_clients").insert(newClientData);
+
 		let insertedClient = await req
 			.db("new_clients")
-			.insert(insertClient)
-			.returns("*");
+			.where("id", insertedClientId);
 
 		res.status(200).json({
 			error: false,
 			message: "Success",
-			results: insertedClient,
+			results: insertedClient[0],
 			addedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {

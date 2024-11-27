@@ -12,10 +12,6 @@ const ClientDetails = ({ clients }) => {
 						<tr>
 							<th>Client</th>
 							<th>Details</th>
-							<th>Client Domain</th>
-							<th>User Count</th>
-							<th>Licenses</th>
-							<th>Last Updated</th>
 						</tr>
 					</thead>
 					<tbody>

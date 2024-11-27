@@ -1,3 +1,4 @@
+const e = require("express");
 const jwt = require("jsonwebtoken");
 
 async function verifyJwtAndAddUser(req, res, next) {
@@ -47,7 +48,11 @@ async function verifyJwtAndAddUser(req, res, next) {
 
 		// check if the user exists, to confirm the user hasn't been deleted
 		if (!user) {
-			res.status(401).json({ error: true, message: "Error" });
+			res.status(401).json({
+				error: true,
+				message: "User not found ?",
+				email: jwtVerified.user.email,
+			});
 			return;
 		}
 

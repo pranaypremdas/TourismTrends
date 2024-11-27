@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 
 // Bootstrap Components
-import { Container, Row, Col, Tabs, Tab, Alert } from "react-bootstrap";
+import { Container, Row, Col, Tabs, Tab } from "react-bootstrap";
 
 // Custom Components
 import CreateUser from "./CreateUser";
@@ -10,6 +10,7 @@ import ClientList from "./ClientList";
 import ClientDetails from "./ClientDetails";
 import NewClientList from "./NewClientList";
 import Loading from "../../Loading";
+import Error from "../../Error/Error";
 
 // Custom Components
 import getRequest from "../../lib/getRequest";
@@ -30,9 +31,10 @@ const ManageUsers = () => {
 
 			const [userList, userError] = await getRequest("user/list");
 			const [clientList, clientError] = await getRequest("client/list");
-			const [newClientList, newClientError] = await getRequest(
-				"client/new/list"
-			);
+			const [newClientList, newClientError] =
+				user.role === "client_admin"
+					? [{ results: [] }, null]
+					: await getRequest("client/new/list");
 
 			if (userError || clientError || newClientError) {
 				setError(
@@ -45,7 +47,7 @@ const ManageUsers = () => {
 			} else {
 				const users = userList.results.map((user) => {
 					const client = clientList.results.find(
-						(client) => client.id.toString() === user.client_id
+						(client) => client.id === user.client_id
 					);
 					return {
 						...user,
@@ -55,12 +57,16 @@ const ManageUsers = () => {
 				const clients = clientList.results.map((client) => {
 					return {
 						...client,
-						user_count: users.filter(
-							(user) => user.client_id === client.id.toString()
-						).length,
+						user_count: users.filter((user) => user.client_id === client.id)
+							.length,
 					};
 				});
-				const newClients = newClientList.results;
+				const newClients = newClientList.results.map((client) => {
+					return {
+						...client,
+						userExists: users.some((user) => user.email === client.email),
+					};
+				});
 
 				setUsers(users);
 				setClients(clients);
@@ -125,10 +131,13 @@ const ManageUsers = () => {
 					</Tabs>
 				</Col>
 			</Row>
+
 			{error && (
-				<Alert variant="danger" className="mt-3">
-					{error}
-				</Alert>
+				<Row>
+					<Col>
+						<Error error={error} />
+					</Col>
+				</Row>
 			)}
 		</Container>
 	);

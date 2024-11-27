@@ -96,15 +96,14 @@ router.get("/", async (req, res) => {
 	try {
 		if (req.user.role === "admin") {
 			let clients = await req.db("new_clients");
-			if (clients.length > 0) {
-				res.status(200).json({
-					error: false,
-					message: "Success",
-					results: clients,
-					retrievedAt: new Date().toLocaleString(),
-				});
-				return;
-			}
+
+			res.status(200).json({
+				error: false,
+				message: "Success",
+				results: clients,
+				retrievedAt: new Date().toLocaleString(),
+			});
+			return;
 		}
 	} catch (error) {
 		res.fiveHundred(error);

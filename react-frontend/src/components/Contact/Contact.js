@@ -46,11 +46,11 @@ const Contact = () => {
 				userCount,
 				message,
 				amount: price.type + price.locations + price.users,
-				paymentMethod: "Credit Card",
+				paymentMethod: "Payment Pending",
 			};
 
 			const [response, error] = await postRequest(
-				"client/subscribe",
+				"subscribe",
 				{ newClient: newClient },
 				false
 			);
@@ -61,8 +61,8 @@ const Contact = () => {
 			} else {
 				setQuoteRef(response.results.quoteRef);
 				setSuccess(true);
-				setLoading(false);
 			}
+			setLoading(false);
 		};
 		saveQuote();
 	};
@@ -112,7 +112,7 @@ const Contact = () => {
 	}
 
 	if (error) {
-		return <Error message={error} />;
+		return <Error error={error} />;
 	}
 
 	if (success) {
@@ -328,7 +328,9 @@ const Contact = () => {
 									<Form.Control
 										type="number"
 										value={userCount}
-										onChange={(e) => setUserCount(e.target.value)}
+										onChange={(e) =>
+											setUserCount(Math.ceil(Math.max(1, e.target.value)))
+										}
 										required
 									></Form.Control>
 								</Form.Group>

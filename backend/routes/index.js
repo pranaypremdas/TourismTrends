@@ -122,6 +122,8 @@ router.use(
 // POST Request: User login
 router.use("/user/login", requireEmailAndPassword, require("./user/login"));
 
+router.use("/user/first", require("./user/firstUser"));
+
 /** 404 */
 
 // Display 404 page

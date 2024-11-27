@@ -36,7 +36,6 @@ async function postRequest(route, body, requireToken = true) {
 
 		// network error
 		if (!response.ok) {
-			console.error(`Error calling ${route}: ${response.statusText}`);
 			let errorData = await response.json();
 			throw new Error(errorData.message || "Network response was not ok");
 		}

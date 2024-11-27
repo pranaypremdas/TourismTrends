@@ -8,8 +8,7 @@ import { Container, Form, Button, Card, Alert } from "react-bootstrap";
 import { UserContext } from "../../contexts/UserContext";
 
 // Custom Components
-import postRequest from "../lib/postRequest";
-import decodeUserToken from "../lib/decodeUserToken";
+import handleLogin from "./handleLogin";
 
 const Login = () => {
 	let navigate = useNavigate();
@@ -29,41 +28,18 @@ const Login = () => {
 		}
 	}, [email, password]);
 
-	const handleLogin = async (e) => {
+	const onLogin = (e) => {
 		e.preventDefault();
-		setLoading(true);
-		setFormError(null);
-
-		const [data, error] = await postRequest(
-			"user/login",
-			{
-				email,
-				password,
-			},
-			false
-		);
-
-		if (error) {
-			setFormError(error);
-		} else {
-			// data gets saved to local session storage
-			if (data && data.token) {
-				sessionStorage.setItem("userToken", JSON.stringify(data));
-				decodeUserToken(data, setUser);
-			}
-			navigate("/");
-		}
-
-		setLoading(false);
+		handleLogin(email, password, setLoading, setFormError, setUser, navigate);
 	};
 
 	return (
 		<Container className="d-flex justify-content-center mt-4 mb-4">
 			<Card style={{ width: "100%", maxWidth: "400px" }}>
 				<Card.Body>
-					<h2 className="text-center mb-4">Login</h2>
+					<h2 className="text-center mb-4">Please Login</h2>
 					{formError && <Alert variant="danger">{formError}</Alert>}
-					<Form onSubmit={handleLogin}>
+					<Form onSubmit={(e) => onLogin(e)}>
 						<Form.Group id="email" className="mb-3">
 							<Form.Label>Email</Form.Label>
 							<Form.Control
