@@ -17,14 +17,8 @@ const allowedOrigins = ["http://localhost:3000", "https://localhost:3000"];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-        // Allow requests from both HTTP and HTTPS origins
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "*",
+    credentials: true,
   })
 );
 
