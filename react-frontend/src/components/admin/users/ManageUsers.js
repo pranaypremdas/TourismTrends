@@ -31,7 +31,7 @@ const ManageUsers = () => {
 			const [userList, userError] = await getRequest("user/list");
 			const [clientList, clientError] = await getRequest("client/list");
 			const [newClientList, newClientError] = await getRequest(
-				"client/newList"
+				"client/new/list"
 			);
 
 			if (userError || clientError || newClientError) {

@@ -59,7 +59,7 @@ const Contact = () => {
 				console.error(error);
 				setError(error);
 			} else {
-				setQuoteRef(response.quoteRef);
+				setQuoteRef(response.results.quoteRef);
 				setSuccess(true);
 				setLoading(false);
 			}

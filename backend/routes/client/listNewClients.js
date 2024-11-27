@@ -1,20 +1,99 @@
 let express = require("express");
 let router = express.Router();
 
-// GET handler for a user list
+/**
+ * @swagger
+ * tags:
+ *   name: Admin
+ *   description: API for admin users
+ */
+
+/**
+ * @swagger
+ * /client/new/list:
+ *   get:
+ *     summary: Retrieve a list of newly subscribed clients pending approval
+ *     tags: [Admin]
+ *     description: Retrieve a list of new clients based on the user's role
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of new clients
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       email:
+ *                         type: string
+ *                       client_name:
+ *                         type: string
+ *                       client_type:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                       updated_at:
+ *                         type: string
+ *                 retrievedAt:
+ *                   type: string
+ *             example:
+ *               error: false
+ *               message: Success
+ *               results:
+ *                 - id: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+ *                   name: "Client 1"
+ *                   email: "client1@example.com"
+ *                   client_name: "Client Name 1"
+ *                   client_type: "Type 1"
+ *                   created_at: "01/01/2021 12:00:00"
+ *                   updated_at: "01/01/2021 12:00:00"
+ *               retrievedAt: "01/01/2021 12:00:00"
+ *       403:
+ *         description: Forbidden
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *             example:
+ *               error: true
+ *               message: "You are not authorized to view clients"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *             example:
+ *               error: true
+ *               message: "Internal Server Error"
+ */
+
 router.get("/", async (req, res) => {
 	try {
-		// check role of validated user
-		// site admin can create any user
-		// client admin can create users for their client
-		if (req.user.role !== "admin" && req.user.client_id !== "1") {
-			res.status(403).json({
-				error: true,
-				message: "You are not authorized to view clients",
-			});
-			return;
-		}
-
 		if (req.user.role === "admin") {
 			let clients = await req.db("new_clients");
 			if (clients.length > 0) {

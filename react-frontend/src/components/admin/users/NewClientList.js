@@ -7,12 +7,13 @@ import postRequest from "../../lib/postRequest";
 const NewClientList = ({ clients }) => {
 	const registerClient = (id) => {
 		const data = {
-			client_id: id,
-			user_id: 1,
+			createClient: {
+				client_id: id,
+			},
 		};
 
 		const register = async () => {
-			const [response, error] = await postRequest("client/update", data);
+			const [response, error] = await postRequest("client/new/process", data);
 			if (error) {
 				console.error("Error: ", error);
 			} else {
@@ -20,10 +21,6 @@ const NewClientList = ({ clients }) => {
 			}
 		};
 		register();
-	};
-
-	const deleteClient = (id) => {
-		console.log("Client ID: ", id);
 	};
 
 	return (
@@ -61,15 +58,8 @@ const NewClientList = ({ clients }) => {
 												size="sm"
 												onClick={() => registerClient(client.id)}
 											>
-												Create Client Account
+												Create Account
 											</Button>
-											{/* <Button
-												variant="danger"
-												size="sm"
-												onClick={() => deleteClient(client.id)}
-											>
-												Delete
-											</Button> */}
 										</ButtonGroup>
 									</td>
 								</tr>

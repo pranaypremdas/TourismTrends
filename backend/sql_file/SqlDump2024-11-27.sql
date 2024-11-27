@@ -134,6 +134,7 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` char(36) NOT NULL,
   `client_id` varchar(255) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `role` varchar(255) NOT NULL,
   `hash` varchar(60) NOT NULL,
@@ -151,7 +152,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('e24c3aff-1349-42cd-9dad-67a6cd009401','1','admin@tourismtrends.com','admin','$2b$10$u..sMG4JSEIb/0xiY.pyOuTgIxVxUAdRpmChYgMQKNIoIuFHcYXYO','2024-11-03 03:00:09','2024-11-03 03:00:09');
+INSERT INTO `users` VALUES ('e24c3aff-1349-42cd-9dad-67a6cd009401','1', 'SiteAdmin', 'admin@tourismtrends.com','admin','$2b$10$u..sMG4JSEIb/0xiY.pyOuTgIxVxUAdRpmChYgMQKNIoIuFHcYXYO','2024-11-03 03:00:09','2024-11-03 03:00:09');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

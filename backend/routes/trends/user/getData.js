@@ -2,7 +2,7 @@ let express = require("express");
 let router = express.Router();
 
 /**
- * Fetches tourism trend data from the database based on the specified criteria.
+ * Fetches tourism trend data from the database specific to the user.
  *
  * @param {Object} req - The request object from the client.
  * @param {Object} req.db - The database connection object.
@@ -10,25 +10,20 @@ let router = express.Router();
  * @param {Object} req.body - The body of the request containing the request parameters.
  * @param {Array<string>} req.body.type - The type of data to fetch (optional).
  * @param {Array<string>} req.body.dateRange - The date range to filter the data (optional).
- * @param {Array<string>} req.query.region - The region to filter the data (optional).
+ * @param {Array<string>} req.data.region - The region to filter the data (optional).
  * @param {Object} res - The response object sent to the client.
  * @returns {Promise<Object>} The response object containing the query results.
  */
 
 /**
  * @swagger
- * tags:
- *   name: Trend Data
- *   description: API for fetching tourism trend data
- */
-
-/**
- * @swagger
- * /trends:
+ * /trends/user/data:
  *   post:
- *     summary: Fetch tourism trend data
+ *     summary: Fetch user-specific trend data
  *     tags: [Trend Data]
- *     description: Fetches tourism trend data from the database based on the specified criteria
+ *     description: Fetches user-specific data from the database based on the specified criteria
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -45,7 +40,7 @@ let router = express.Router();
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["ave_historical_occupancy", "ave_daily_rate"]
+ *                 example: ["type1", "type2"]
  *               dateRange:
  *                 type: array
  *                 items:
@@ -63,6 +58,21 @@ let router = express.Router();
  *                   type: boolean
  *                 message:
  *                   type: string
+ *                 query:
+ *                   type: object
+ *                   properties:
+ *                     region:
+ *                       type: array
+ *                       items:
+ *                         type: integer
+ *                     type:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     dateRange:
+ *                       type: array
+ *                       items:
+ *                         type: string
  *                 results:
  *                   type: array
  *                   items:
@@ -78,17 +88,24 @@ let router = express.Router();
  *                         type: string
  *                       value:
  *                         type: number
+ *                 retrievedAt:
+ *                   type: string
  *             example:
  *               error: false
  *               message: "Data fetched successfully"
+ *               query:
+ *                 region: [1, 2, 3, 4]
+ *                 type: ["type1", "type2"]
+ *                 dateRange: ["2021-01-01", "2021-12-31"]
  *               results:
  *                 - id: 1
  *                   region: "Region 1"
- *                   type: "ave_historical_occupancy"
+ *                   type: "type1"
  *                   date: "2021-01-01"
  *                   value: 100
+ *               retrievedAt: "01/01/2021 12:00:00"
  *       400:
- *         description: Invalid request parameters
+ *         description: Invalid request parameters or no data found
  *         content:
  *           application/json:
  *             schema:
@@ -100,7 +117,21 @@ let router = express.Router();
  *                   type: string
  *             example:
  *               error: true
- *               message: "Invalid region"
+ *               message: "No data found"
+ *       404:
+ *         description: User-specific data not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *             example:
+ *               error: true
+ *               message: "User-specific data not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -116,25 +147,30 @@ let router = express.Router();
  *               error: true
  *               message: "Internal Server Error"
  */
-
 router.post("/", async (req, res) => {
 	try {
-		// Get the region from the body or use the user's region if they are a business member
-		let region = req.body.region || [1, 2, 3, 4];
+		let region = req.body.region || [];
 
-		// region includes a value greater than 4, return an error
-		if (!Array.isArray(region) || region.some((r) => r > 4)) {
+		// limit to "owner" and "business" client types
+		if ([!"owner", "business"].includes(req.user.client_type)) {
+			res.status(403).json({
+				error: true,
+				message: `Wrong client type, you are a ${req.user.client_type} client`,
+			});
+			return;
+		}
+
+		// region includes a value greater than 4, or has not values, return an error
+		if (
+			!Array.isArray(region) ||
+			region.length === 0 ||
+			region.some((r) => r > 4)
+		) {
 			res.status(400).json({
 				error: true,
 				message: "Invalid region",
 			});
 			return;
-		}
-
-		// limit the region to the user's region if they are a business member (client_type = business) lower subscription level
-		// other types are "owner" being TourismTrends admin, and "government/tourism board" being the highest subscription level
-		if (req.user.client_type == "business") {
-			region = req.user.lga_ids;
 		}
 
 		// Get the type from the body or use the default
@@ -194,12 +230,27 @@ router.post("/", async (req, res) => {
 				id: "t.id",
 				date: "t.date",
 				lga_id: "t.lga_id",
-				lga_name: "lgas.lga_name",
+				lga_name: "lga.lga_name",
 			}
 		);
 
+		// Check if the user-specific table exists
+		let tableName =
+			req.user.role === "admin" && req.user.client_id === 1 // site admin
+				? `trends`
+				: `user_trends_${req.user.client_id}`;
+		let tableExists = await req.db.schema.hasTable(tableName);
+
+		if (!tableExists) {
+			res.status(404).json({
+				error: true,
+				message: "User-specific data not found",
+			});
+			return;
+		}
+
 		let results = await req
-			.db("trends as t")
+			.db(`${tableName} as t`)
 			.select(selectedColumns)
 			.join("lgas", "t.lga_id", "lgas.id")
 			.whereIn("lgas.id", region)
@@ -210,7 +261,7 @@ router.post("/", async (req, res) => {
 		if (!results || results.length === 0) {
 			res.status(400).json({
 				error: true,
-				message: "No region found",
+				message: "No data found",
 			});
 			return;
 		}

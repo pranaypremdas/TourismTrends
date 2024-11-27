@@ -3,6 +3,80 @@ let router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: User login and registration
+ */
+
+/**
+ * @swagger
+ * /user/login:
+ *   post:
+ *     summary: User login
+ *     tags: [Authentication]
+ *     description: Authenticate a user and return a JWT token
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "john@doe.com"
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *     responses:
+ *       200:
+ *         description: User authenticated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   example: "a.b.c"
+ *                 token_type:
+ *                   type: string
+ *                   example: "Bearer"
+ *                 expires_in:
+ *                   type: number
+ *                   example: 86400
+ *       401:
+ *         description: Incorrect email or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *             example:
+ *               error: true
+ *               message: "Incorrect email or password"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *             example:
+ *               error: true
+ *               message: "Internal Server Error"
+ */
 router.post("/", async function (req, res, next) {
 	try {
 		// process body of request, email and password have already been checked

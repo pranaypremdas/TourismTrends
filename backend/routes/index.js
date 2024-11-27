@@ -1,92 +1,128 @@
 let express = require("express");
 let router = express.Router();
-let swaggerUI = require("swagger-ui-express");
-let swaggerOptions = require("./api-docs/swaggerOptions.json");
 
-const { verifyJwtAndAddUser } = require("../middleware/verifyJwtAndAddUser");
+const { swaggerUI, swaggerSpec } = require("./api-docs/swagger.js");
+
+const {
+	verifyJwtAndAddUser,
+} = require("../middleware/authentication/verifyJwtAndAddUser.js");
+const {
+	isSiteAdmin,
+	isEitherAdmin,
+} = require("../middleware/authentication/isAdmin.js");
+
 const {
 	rejectInvalidUrlQueryParams,
 	requireEmailAndPassword,
 } = require("../middleware/requestTests");
 
+/**
+ *  SETUP ROUTES
+ */
+
 // setup 500 error handling (attaches to all routes)
 router.use("*", require("../middleware/error/fiveHundred"));
 
-// reject URL parameters for all routes
+// Reject URL parameters for all routes
 router.use("*", rejectInvalidUrlQueryParams);
 
-// POST Define a simple route to check if our server works
+// POST Request: Define a simple route to check if our server works
 router.get("/helloWorld", verifyJwtAndAddUser, (_, res) => {
 	res.send("Hello World!");
 });
 
-// GET Swagger UI setup
-router.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerOptions));
+/** SWAGGER DOCS */
 
-// POST get tourism trends
+// GET Request: Swagger UI setup
+router.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+
+/** TREND DATA */
+
+// POST Request: retrieve tourism trends
 router.use("/trends", verifyJwtAndAddUser, require("./trends/publicData"));
 
-// POST get user data
+/** USER TREND DATA */
+
+// POST Request: Retrieve user uploaded data
 router.use(
-	"/user/trends/get",
+	"/trends/user/get",
 	verifyJwtAndAddUser,
-	require("./user/trends/getData")
+	isEitherAdmin,
+	require("./trends/user/getData.js")
 );
 
-// POST add user data
+// POST Request: Add user data
 router.use(
-	"/user/trends/add",
+	"/trends/user/add",
 	verifyJwtAndAddUser,
-	require("./user/trends/addData")
+	isEitherAdmin,
+	require("./trends/user/addData.js")
 );
 
-//  POST delete user data
+// POST Request: Delete user data
 router.use(
-	"/user/trends/delete",
+	"/trends/user/delete",
 	verifyJwtAndAddUser,
-	require("./user/trends/deleteData")
+	isEitherAdmin,
+	require("./trends/user/deleteData.js")
 );
 
-// POST a new client can subscribe
-router.use("/client/subscribe", require("./client/newClient.js"));
+// LGA list
+router.use("/lga/list", require("./lga/list"));
 
-// GET list of new clients
+/** SUBSCRIPTION */
+
+// POST Request: A new client registration
+router.use("/subscribe", require("./client/newSubscription.js"));
+
+/** ADMIN ROUTES */
+
+// GET Request: List of new clients
 router.use(
-	"/client/newList",
+	"/client/new/list",
 	verifyJwtAndAddUser,
+	isSiteAdmin,
 	require("./client/listNewClients.js")
 );
 
 // POST update a client #TODO
 router.use(
-	"/client/update",
+	"/client/new/process",
 	verifyJwtAndAddUser,
-	require("./client/updateClient")
+	isSiteAdmin,
+	require("./client/procesNewClient.js")
 );
 
 // GET active client list
 router.use(
 	"/client/list",
 	verifyJwtAndAddUser,
+	isEitherAdmin,
 	require("./client/listClients")
 );
+
+// GET Request: Get User List
+router.use(
+	"/user/list",
+	verifyJwtAndAddUser,
+	isEitherAdmin,
+	require("./user/listUsers")
+);
+
+/** AUTHENTICATION */
 
 // POST user registration
 router.use(
 	"/user/register",
 	verifyJwtAndAddUser,
-	requireEmailAndPassword,
+	isEitherAdmin,
 	require("./user/register")
 );
 
-// POST user login
+// POST Request: User login
 router.use("/user/login", requireEmailAndPassword, require("./user/login"));
 
-// POST user list
-router.use("/user/list", verifyJwtAndAddUser, require("./user/listUsers"));
-
-// LGA list
-router.use("/lga/list", require("./lga/list"));
+/** 404 */
 
 // Display 404 page
 router.use("*", require("./404/404"));
