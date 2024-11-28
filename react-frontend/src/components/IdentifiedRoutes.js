@@ -12,6 +12,7 @@ import Contact from "./Contact/Contact";
 import Dashboard from "./Dashboard";
 import ManageUsers from "./admin/users/ManageUsers";
 import FirstUser from "./user/FirstUser";
+import RenewSubscription from "./Contact/RenewSubscription";
 
 // Contexts
 import { UserContext } from "../contexts/UserContext";
@@ -33,6 +34,25 @@ import { UserContext } from "../contexts/UserContext";
  */
 function IdentifiedRoutes() {
 	const { user } = useContext(UserContext);
+
+	// If user is logged in and their subscription has expired, redirect to the RenewSubscription component
+	if (user && user.client.expired) {
+		return (
+			<div className="app-container">
+				<Header />
+				<div className="main-content">
+					<Routes>
+						<Route path="/" element={<MainPage />} />
+						<Route path="/logout" element={<Logout />} />
+						{user && <Route path="/user/profile" element={<Profile />} />}
+
+						<Route path="*" element={<RenewSubscription />} />
+					</Routes>
+				</div>
+				<Footer />
+			</div>
+		);
+	}
 
 	return (
 		<div className="app-container">

@@ -50,7 +50,7 @@ async function verifyJwtAndAddUser(req, res, next) {
 		if (!user) {
 			res.status(401).json({
 				error: true,
-				message: "User not found ?",
+				message: "User not found",
 				email: jwtVerified.user.email,
 			});
 			return;

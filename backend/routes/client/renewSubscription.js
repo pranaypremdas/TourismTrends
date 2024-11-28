@@ -22,11 +22,11 @@ const { v4: uuidv4 } = require("uuid");
 
 /**
  * @swagger
- * /subscribe:
+ * /renew:
  *   post:
- *     summary: Add a new client subscription from the Contact/Subscription form
+ *     summary: Renew a client subscription from the RenewSubscription form
  *     tags: [Subscription]
- *     description: Add a new client subscription to the database
+ *     description: Renew a client subscription to the database
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -141,7 +141,7 @@ const { v4: uuidv4 } = require("uuid");
 router.post("/", async (req, res) => {
 	try {
 		const newClient = req.body.newClient;
-		if (!newClient || !typeof newClient === "object") {
+		if (!newClient || typeof newClient !== "object") {
 			res.status(400).json({
 				error: true,
 				message: "Request body incomplete",
@@ -149,52 +149,15 @@ router.post("/", async (req, res) => {
 			return;
 		}
 
-		// test the keys of the object
-		// 1. All Keys Check
-		let keysValid = Object.keys(newClient).every((d) =>
-			[
-				"name",
-				"email",
-				"clientName",
-				"clientType",
-				"lgaIds",
-				"licenses",
-				"message",
-				"amount",
-				"paymentMethod",
-				"quoteRef",
-			].includes(d)
-		);
+		console.log(newClient);
 
-		if (!keysValid) {
-			res.status(400).json({
-				error: true,
-				message: "Invalid request",
-			});
-			return;
-		}
+		let expiresAt = new Date();
+		expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-		// Check if the user-specific table exists
-		let tableExists = await req.db.schema.hasTable("new_clients");
-
-		if (!tableExists) {
-			// create the table
-			await req.db.schema.createTable("new_clients", (table) => {
-				table.uuid("id").primary();
-				table.string("name");
-				table.string("email");
-				table.string("c_name");
-				table.string("c_type");
-				table.string("lgaIds");
-				table.integer("licenses");
-				table.string("message");
-				table.integer("amount");
-				table.string("paymentMethod");
-				table.string("quoteRef");
-				table.string("status").defaultTo("pending");
-				table.timestamps(true, true);
-			});
-		}
+		await req
+			.db("clients")
+			.where("id", newClient.client_id)
+			.update("expires_at", expiresAt);
 
 		// add data to the table
 		let newClientData = {

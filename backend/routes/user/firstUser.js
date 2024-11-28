@@ -148,6 +148,7 @@ router.post("/", async (req, res) => {
 			c_type: "admin",
 			domain: "tourismtrends.com",
 			licenses: 9999,
+			expires_at: "9999-12-31 23:59:59",
 		});
 
 		let lgas = await req.db("lgas").select("id");

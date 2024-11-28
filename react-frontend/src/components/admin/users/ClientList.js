@@ -15,6 +15,7 @@ const ClientList = ({ clients }) => {
 							<th>Client Domain</th>
 							<th>User Count</th>
 							<th>Licenses</th>
+							<th>Expires At</th>
 							<th>Last Updated</th>
 						</tr>
 					</thead>
@@ -27,7 +28,8 @@ const ClientList = ({ clients }) => {
 									<td>{client.domain}</td>
 									<td>{client.user_count}</td>
 									<td>{client.licenses}</td>
-									<td>{new Date(client.updated_at).toLocaleString()}</td>
+									<td>{new Date(client.expires_at).toLocaleDateString()}</td>
+									<td>{new Date(client.updated_at).toLocaleDateString()}</td>
 								</tr>
 							))}
 					</tbody>

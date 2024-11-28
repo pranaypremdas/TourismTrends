@@ -30,7 +30,7 @@ const UserProvider = ({ children }) => {
 		let token = sessionStorage.getItem("userToken");
 		decodeUserToken(token, setUser);
 		setLoading(false);
-	}, []);
+	}, [setUser]);
 
 	if (loading) {
 		return <Loading />;

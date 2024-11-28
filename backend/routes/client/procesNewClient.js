@@ -145,11 +145,15 @@ router.post("/", async (req, res) => {
 		});
 		const hash = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
+		let expiresAt = new Date();
+		expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
 		let newClient = {
 			c_name: client.c_name,
 			c_type: client.c_type,
 			domain: client.email.split("@")[1],
 			licenses: client.licenses,
+			expires_at: expiresAt,
 		};
 
 		// add data to the tables

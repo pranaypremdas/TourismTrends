@@ -75,6 +75,9 @@ router.use("/lga/list", require("./lga/list"));
 // POST Request: A new client registration
 router.use("/subscribe", require("./client/newSubscription.js"));
 
+// POST Request: Renew a subscription
+router.use("/renew", require("./client/renewSubscription.js"));
+
 /** ADMIN ROUTES */
 
 // GET Request: List of new clients

@@ -26,7 +26,7 @@ const decodeUserToken = (userToken, setUser) => {
 			const decodedToken = jwtDecode(userToken.token);
 
 			if (decodedToken.exp * 1000 > Date.now()) {
-				setUser(decodedToken.user);
+				setUser({ ...decodedToken.user, client: decodedToken.client });
 			} else {
 				sessionStorage.removeItem("userToken");
 			}

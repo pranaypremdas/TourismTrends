@@ -1,24 +1,29 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
+
+// Contexts
+import { UserContext } from "../../contexts/UserContext";
 
 // Custom Components
 import getRequest from "../lib/getRequest";
 import Stepper from "../Stepper/Stepper";
 import Error from "../Error/Error";
 import Loading from "../Loading";
-import SubscribeStep1 from "./Steps/SubscribeStep1";
+import RenewStep1 from "./Steps/RenewStep1";
 import SubscribeStep2 from "./Steps/SubscribeStep2";
-import SubscribeStep2GreaterThan25 from "./Steps/SubscribeStep2GreaterThan25";
 import SubscribeStep3 from "./Steps/SubscribeStep3";
 import SubscribeStep4 from "./Steps/SubscribeStep4";
 
-const Contact = () => {
-	// State variables for user input
+const RenewSubscription = () => {
+	const { user } = useContext(UserContext);
+
 	const [newClient, setNewClient] = useState({
-		name: "",
-		email: "",
+		name: user.name,
+		email: user.email,
+		client_id: user.client.id,
 		clientName: "",
 		clientType: "",
 		lgaIds: [],
+		lgas: [],
 		licenses: 0,
 		message: "",
 		amount: 0,
@@ -29,49 +34,63 @@ const Contact = () => {
 	const [state, setState] = useState({
 		loading: false,
 		error: null,
-		lgas: [],
 		price: { locations: 0, users: 0, type: 0 },
-		type: "subscribe",
+		lgas: [],
+		type: "renew",
 		currentStep: 1,
 	});
 
-	// Fetches the list of local government areas
+	// Fetch the licenses
 	useEffect(() => {
-		const getLgas = async () => {
+		const fetchData = async () => {
 			setState((s) => ({ ...s, loading: true, error: null }));
+			const [clientList, clientError] = await getRequest("client/list");
 			const [data, error] = await getRequest("lga/list", false);
-			if (error) {
-				console.error(error);
-				setState((s) => ({ ...s, error: error }));
+
+			if (clientError || error) {
+				console.error(clientError, error);
+				setState((s) => ({ ...s, error: clientError ? clientError : error }));
 			} else {
+				let client = clientList.results[0];
+				setNewClient((s) => ({
+					...s,
+					clientName: client.c_name,
+					clientType: client.c_type,
+					lgaIds: user.client.lgaIds,
+					lgas: data.results
+						.map((lga) =>
+							user.client.lgaIds.includes(lga.id) ? lga.lga_name : null
+						)
+						.filter((lga) => lga !== null),
+					licenses: client.licenses,
+					expires_at: client.expires_at,
+				}));
 				setState((s) => ({ ...s, lgas: data.results }));
 			}
 			setState((s) => ({ ...s, loading: false }));
 		};
-
-		getLgas();
+		fetchData();
 	}, []);
-
-	if (state.loading) {
-		return <Loading />;
-	}
 
 	if (state.error) {
 		return <Error error={state.error} />;
+	}
+
+	if (state.loading) {
+		return <Loading />;
 	}
 
 	const steps = [
 		{
 			id: 1,
 			name: "Step 1: Information",
-			Component: SubscribeStep1,
+			Component: RenewStep1,
 			props: { newClient, setNewClient, state, setState },
 		},
 		{
 			id: 2,
 			name: "Step 2: Price Summary",
-			Component:
-				newClient.licenses >= 25 ? SubscribeStep2GreaterThan25 : SubscribeStep2,
+			Component: SubscribeStep2,
 			props: { newClient, setNewClient, state, setState },
 		},
 		{
@@ -98,4 +117,4 @@ const Contact = () => {
 	);
 };
 
-export default Contact;
+export default RenewSubscription;

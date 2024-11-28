@@ -83,22 +83,13 @@ router.post("/", async function (req, res, next) {
 		let email = req.body.email;
 		let password = req.body.password;
 
-		// Check if user exists in database
-		let user = await req
+		let userPasswordCheck = await req
 			.db("users")
-			.select(
-				"users.id",
-				"users.client_id",
-				"users.email",
-				"users.hash",
-				"users.role",
-				"clients.c_name as client_name",
-				"clients.c_type as client_type",
-				"clients.id"
-			)
-			.join("clients", "users.client_id", "clients.id")
+			.select("hash")
 			.where("email", email);
-		if (user.length === 0) {
+
+		// If user does not exist, return error response
+		if (userPasswordCheck.length === 0) {
 			res.status(401).json({
 				error: true,
 				message: "Incorrect email or password",
@@ -107,7 +98,7 @@ router.post("/", async function (req, res, next) {
 		}
 
 		// If user does exist, verify if passwords match
-		const match = await bcrypt.compare(password, user[0].hash);
+		const match = await bcrypt.compare(password, userPasswordCheck[0].hash);
 
 		// If passwords do not match, return error response
 		if (!match) {
@@ -118,6 +109,38 @@ router.post("/", async function (req, res, next) {
 			return;
 		}
 
+		// get the user from the database
+		let user = await req
+			.db("users")
+			.select(
+				"users.id",
+				"users.client_id",
+				"users.name",
+				"users.email",
+				"users.role",
+				"clients.c_name as client_name",
+				"clients.c_type as client_type",
+				"clients.expires_at",
+				req.db.raw("GROUP_CONCAT(client_lgas.lga_id) as lgaIds"),
+				"users.updated_at",
+				"users.created_at"
+			)
+			.join("clients", "users.client_id", "clients.id")
+			.join("client_lgas", "users.client_id", "client_lgas.client_id")
+			.where("users.email", email)
+			.groupBy(
+				"users.id",
+				"users.client_id",
+				"users.email",
+				"users.role",
+				"clients.c_name",
+				"clients.c_type",
+				"clients.expires_at",
+				"users.updated_at",
+				"users.created_at"
+			)
+			.first();
+
 		// If passwords match, create a JWT token and return it
 		const createdDate = Math.floor(Date.now() / 1000);
 		const createdPlusOneDay = createdDate + 24 * 60 * 60; // Adds one day in second
@@ -126,13 +149,21 @@ router.post("/", async function (req, res, next) {
 				exp: createdPlusOneDay,
 				iat: createdDate,
 				user: {
-					id: user[0].id,
-					email: user[0].email,
-					role: user[0].role || "user",
-					client_id: user[0].client_id,
-					client_name: user[0].client_name,
-					client_type: user[0].client_type,
-					lga: user[0].lga_id,
+					id: user.id,
+					client_id: user.client_id,
+					name: user.name,
+					email: user.email,
+					role: user.role || "user",
+					updated_at: user.updated_at,
+					created_at: user.created_at,
+				},
+				client: {
+					id: user.client_id,
+					name: user.client_name,
+					type: user.client_type,
+					lgaIds: user.lgaIds.split(",").map(Number),
+					expires_at: user.expires_at,
+					expired: user.expires_at < new Date(),
 				},
 			},
 			process.env.JWT_SECRET

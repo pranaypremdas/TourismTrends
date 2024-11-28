@@ -31,11 +31,16 @@ const Profile = () => {
 								<strong>Role:</strong> {user.role}
 							</p>
 							<p>
-								<strong>Client Name:</strong> {user.client_name}
+								<strong>Client Name:</strong> {user.client.name}
 							</p>
 							<p>
-								<strong>Client Type:</strong> {user.client_type}
+								<strong>Client Type:</strong> {user.client.type}
 							</p>
+							<p>
+								<strong>Expires At:</strong>{" "}
+								{new Date(user.client.expires_at).toLocaleString()}
+							</p>
+
 							<Button variant="danger" onClick={handleLogout} className="w-100">
 								Logout
 							</Button>

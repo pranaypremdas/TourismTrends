@@ -16,6 +16,27 @@ import Error from "../../Error/Error";
 import getRequest from "../../lib/getRequest";
 import { UserContext } from "../../../contexts/UserContext";
 
+/**
+ * ManageUsers component fetches and displays users and clients information.
+ * It provides different views and functionalities based on the user's role.
+ *
+ * @component
+ * @example
+ * return (
+ *   <ManageUsers />
+ * )
+ *
+ * @returns {JSX.Element} The rendered component.
+ *
+ * @description
+ * - Fetches user, client, and new client lists from the server.
+ * - Displays loading indicator while fetching data.
+ * - Handles and displays errors if any occur during data fetching.
+ * - Renders different tabs and components based on the user's role:
+ *   - Admin: Can view clients, pending clients, user list, and create new users.
+ *   - Client Admin: Can view client details, user list and create new users.
+ * - Uses context to get the current user information.
+ */
 const ManageUsers = () => {
 	const { user } = useContext(UserContext);
 	const [users, setUsers] = useState(null);
