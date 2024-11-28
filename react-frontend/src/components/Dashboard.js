@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Form,
+  Button,
+  Tab,
+  Nav,
+} from "react-bootstrap";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -33,6 +42,13 @@ ChartJS.register(
 const Dashboard = () => {
   const [rowData, setRowData] = useState([]);
   const [chartData, setChartData] = useState(null);
+  const [startDate, setStartDate] = useState("2024-01-01");
+  const [endDate, setEndDate] = useState("2024-01-31");
+  const [startYear, setStartYear] = useState("2023");
+  const [endYear, setEndYear] = useState("2024");
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("customDates");
+  const [metadata, setMetadata] = useState(null); // To store calculated statistics
 
   const [columnDefs] = useState([
     { headerName: "Date", field: "date" },
@@ -45,70 +61,109 @@ const Dashboard = () => {
     filter: true,
     resizable: true,
   };
-  // TODO need to find a way to retrieve the token rather than copy pasting it
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzI3NzU2NjAsImlhdCI6MTczMjY4OTI2MCwidXNlciI6eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB0b3VyaXNtdHJlbmRzLmNvbSIsInJvbGUiOiJhZG1pbiIsImNsaWVudF9pZCI6IjEiLCJjbGllbnRfbmFtZSI6IlRvdXJpc20gVHJlbmRzIiwiY2xpZW50X3R5cGUiOiJvd25lciJ9fQ.EoGklaLvi1JLJyVkQVP-jba7-ek5syzAQawWvm_bFCQ";
 
-        const requestBody = {
-          region: [1, 2, 3],
-          dateRange: ["2024-01-01", "2024-01-31"],
-          type: ["ave_historical_occupancy"],
-        };
+  // Function to calculate statistics (max, min, average, count, standard deviation)
+  const calculateStatistics = (data) => {
+    const values = data.map((item) => item.ave_historical_occupancy);
+    const count = values.length;
+    const sum = values.reduce((acc, value) => acc + value, 0);
+    const avg = sum / count;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const stdDev = Math.sqrt(
+      values.reduce((acc, value) => acc + Math.pow(value - avg, 2), 0) / count
+    );
 
-        const response = await axios.post(
-          "https://localhost:5000/trends",
-          requestBody,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const mappedData = response.data.results.map((item) => ({
-          date: item.date,
-          lga_name: item.lga_name,
-          ave_historical_occupancy: item.ave_historical_occupancy,
-        }));
-
-        setRowData(mappedData);
-
-        // Prepare data for the chart
-        const groupedData = mappedData.reduce((acc, item) => {
-          if (!acc[item.lga_name]) {
-            acc[item.lga_name] = [];
-          }
-          acc[item.lga_name].push({
-            x: item.date,
-            y: item.ave_historical_occupancy,
-          });
-          return acc;
-        }, {});
-
-        const datasets = Object.keys(groupedData).map((lga_name) => ({
-          label: lga_name,
-          data: groupedData[lga_name],
-          fill: false,
-          borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
-        }));
-
-        setChartData({
-          datasets,
-        });
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+    return {
+      count,
+      avg,
+      min,
+      max,
+      stdDev,
     };
+  };
 
-    fetchData();
-  }, []);
+  const fetchData = async (isYearOnYear = false) => {
+    setLoading(true);
+    try {
+      const token =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzI4NzAwNjQsImlhdCI6MTczMjc4MzY2NCwidXNlciI6eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB0b3VyaXNtdHJlbmRzLmNvbSIsInJvbGUiOiJhZG1pbiIsImNsaWVudF9pZCI6IjEiLCJjbGllbnRfbmFtZSI6IlRvdXJpc20gVHJlbmRzIiwiY2xpZW50X3R5cGUiOiJvd25lciJ9fQ.-XtHMI_6m2MpSvq4hYcJ-Okd1n6l_ZIZ0F60zEEYKFk";
+
+      // Construct dates for custom or year-on-year selection
+      const yearOnYearStartDate = `${startYear}-01-01`;
+      const yearOnYearEndDate = `${endYear}-12-31`;
+
+      const requestBody = isYearOnYear
+        ? {
+            region: [1, 2, 3],
+            dateRange: [yearOnYearStartDate, yearOnYearEndDate],
+            type: ["ave_historical_occupancy"],
+          }
+        : {
+            region: [1, 2, 3],
+            dateRange: [startDate, endDate],
+            type: ["ave_historical_occupancy"],
+          };
+
+      const response = await axios.post(
+        "http://localhost:5000/trends",
+        requestBody,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const mappedData = response.data.results.map((item) => ({
+        date: item.date,
+        lga_name: item.lga_name,
+        ave_historical_occupancy: item.ave_historical_occupancy,
+      }));
+
+      setRowData(mappedData);
+
+      // Calculate metadata
+      const stats = calculateStatistics(mappedData);
+      setMetadata(stats);
+
+      // Prepare data for the chart
+      const groupedData = mappedData.reduce((acc, item) => {
+        if (!acc[item.lga_name]) {
+          acc[item.lga_name] = [];
+        }
+        acc[item.lga_name].push({
+          x: item.date,
+          y: item.ave_historical_occupancy,
+        });
+        return acc;
+      }, {});
+
+      const datasets = Object.keys(groupedData).map((lga_name) => ({
+        label: lga_name,
+        data: groupedData[lga_name],
+        fill: false,
+        borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
+      }));
+
+      setChartData({
+        datasets,
+      });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(activeTab === "yearOnYear");
+  }, [activeTab]);
 
   return (
     <Container className="my-5">
+      {/* Header and Navigation */}
       <Row className="mb-4">
         <Col>
           <h1 className="text-center">Tourism Data Insights for Queensland</h1>
@@ -119,65 +174,153 @@ const Dashboard = () => {
           </p>
         </Col>
       </Row>
+
+      {/* Tabs for Custom and Year-on-Year */}
+      <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
+        <Nav variant="tabs" className="mb-4">
+          <Nav.Item>
+            <Nav.Link eventKey="customDates">Custom Dates</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="yearOnYear">Year-on-Year</Nav.Link>
+          </Nav.Item>
+        </Nav>
+        <Tab.Content>
+          <Tab.Pane eventKey="customDates">
+            {/* Custom Dates Form */}
+            <Row>
+              <Col>
+                <Form>
+                  <Row>
+                    <Col>
+                      <Form.Group controlId="startDate">
+                        <Form.Label>Start Date</Form.Label>
+                        <Form.Control
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                      <Form.Group controlId="endDate">
+                        <Form.Label>End Date</Form.Label>
+                        <Form.Control
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col className="d-flex align-items-end">
+                      <Button
+                        variant="primary"
+                        onClick={() => fetchData(false)}
+                        disabled={loading}
+                      >
+                        {loading ? "Loading..." : "Search"}
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form>
+              </Col>
+            </Row>
+          </Tab.Pane>
+          <Tab.Pane eventKey="yearOnYear">
+            {/* Year-on-Year Form */}
+            <Row>
+              <Col>
+                <Form>
+                  <Row>
+                    <Col>
+                      <Form.Group controlId="startYear">
+                        <Form.Label>Start Year</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={startYear}
+                          onChange={(e) => setStartYear(e.target.value)}
+                        >
+                          <option value="2022">2022</option>
+                          <option value="2023">2023</option>
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                      <Form.Group controlId="endYear">
+                        <Form.Label>End Year</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={endYear}
+                          onChange={(e) => setEndYear(e.target.value)}
+                        >
+                          <option value="2023">2023</option>
+                          <option value="2024">2024</option>
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                    <Col className="d-flex align-items-end">
+                      <Button
+                        variant="primary"
+                        onClick={() => fetchData(true)}
+                        disabled={loading}
+                      >
+                        {loading ? "Loading..." : "Search"}
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form>
+              </Col>
+            </Row>
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
+
+      {/* Metadata Display */}
+      {metadata && (
+        <Row className="my-4">
+          <Col>
+            <Card>
+              <Card.Header>Summary Statistics</Card.Header>
+              <Card.Body>
+                <p>Average: {metadata.avg.toFixed(2)}</p>
+                <p>Max: {metadata.max}</p>
+                <p>Min: {metadata.min}</p>
+                <p>Standard Deviation: {metadata.stdDev.toFixed(2)}</p>
+                <p>Count: {metadata.count}</p>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
+
+      {/* Chart */}
+      {chartData && (
+        <Row className="mb-4">
+          <Col>
+            <Card>
+              <Card.Header>Occupancy Trends</Card.Header>
+              <Card.Body>
+                <Line data={chartData} />
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
+
+      {/* AgGrid Table */}
       <Row>
         <Col>
-          <Card className="mb-4">
-            <Card.Body>
-              <Card.Title>Occupancy Trends Over Time</Card.Title>
-              {chartData && (
-                <Line
-                  data={{
-                    labels: rowData.map((item) => item.date),
-                    datasets: chartData.datasets,
-                  }}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      legend: {
-                        position: "top",
-                      },
-                      title: {
-                        display: true,
-                        text: "Average Historical Occupancy Rate",
-                      },
-                    },
-                    scales: {
-                      x: {
-                        type: "time",
-                        time: {
-                          unit: "day",
-                        },
-                        min: "2024-01-01",
-                        max: "2024-01-31",
-                      },
-                      y: {
-                        beginAtZero: true,
-                      },
-                    },
-                  }}
-                />
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-      <Row>
-        <Col>
-          <Card>
-            <Card.Body>
-              <Card.Title>Occupancy Data</Card.Title>
-              <div
-                className="ag-theme-alpine"
-                style={{ height: 400, width: "100%" }}
-              >
-                <AgGridReact
-                  rowData={rowData}
-                  columnDefs={columnDefs}
-                  defaultColDef={defaultColDef}
-                />
-              </div>
-            </Card.Body>
-          </Card>
+          <div
+            className="ag-theme-alpine"
+            style={{ height: 400, width: "100%" }}
+          >
+            <AgGridReact
+              rowData={rowData}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              pagination
+            />
+          </div>
         </Col>
       </Row>
     </Container>
