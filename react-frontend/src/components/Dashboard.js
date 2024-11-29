@@ -54,6 +54,17 @@ const Dashboard = () => {
 	const [activeTab, setActiveTab] = useState("customDates");
 	const [metadata, setMetadata] = useState(null); // To store calculated statistics
 
+	// const [filterState, setFilterState] = useState({
+	// 	startDate: "2024-01-01",
+	// 	endDate: "2024-01-31",
+	// 	startYear: "2023",
+	// 	endYear: "2024",
+	// 	lgas: [],
+	// 	trendType: "ave_historical_occupancy",
+	// });
+
+	// setStartDate(s => ({ ...s, startDate: filterState.startDate }));
+
 	const [columnDefs] = useState([
 		{ headerName: "Date", field: "date" },
 		{ headerName: "LGA Name", field: "lga_name" },
