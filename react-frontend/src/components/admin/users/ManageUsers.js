@@ -58,11 +58,11 @@ const ManageUsers = () => {
 					: await getRequest("client/new/list");
 
 			if (userError) {
-				setError(userError.message);
+				setError(userError);
 			} else if (clientError) {
-				setError(clientError.message);
+				setError(clientError);
 			} else if (newClientError) {
-				setError(newClientError.message);
+				setError(newClientError);
 			} else {
 				const users = userList.results.map((user) => {
 					const client = clientList.results.find(

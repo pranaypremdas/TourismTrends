@@ -30,7 +30,7 @@ import LocalGovernmentAreas from "./LocalGovernmentAreas";
 const ManageData = () => {
 	const { user } = useContext(UserContext);
 	const [lgas, setLgas] = useState([]);
-	const [trendTypes, setTrendTypes] = useState({public: [], user: []});
+	const [trendTypes, setTrendTypes] = useState({ public: [], user: [] });
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 
@@ -43,9 +43,9 @@ const ManageData = () => {
 			const [trendTypes, trendTypesError] = await getRequest("trends/types");
 
 			if (lgaError) {
-				setError(lgaError.message);
+				setError(lgaError);
 			} else if (trendTypesError) {
-				setError(trendTypesError.message);
+				setError(trendTypesError);
 			} else {
 				setLgas(lgaList.results);
 				setTrendTypes(trendTypes.results);

@@ -49,7 +49,7 @@ async function postRequest(route, body, requireToken = true) {
 
 		return [tempResponse, null];
 	} catch (error) {
-		console.error(`Error calling ${route}:`, error.message);
+		console.log(`Error calling ${route}:`, error.message);
 		return [null, error.message];
 	}
 }
