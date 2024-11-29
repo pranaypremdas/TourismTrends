@@ -10,6 +10,7 @@ import Error from "../../Error/Error";
 // Custom Components
 import getRequest from "../../lib/getRequest";
 import { UserContext } from "../../../contexts/UserContext";
+import LocalGovernmentAreas from "./LocalGovernmentAreas";
 
 /**
  * ManageData component fetches and displays users and clients information.
@@ -24,17 +25,12 @@ import { UserContext } from "../../../contexts/UserContext";
  * @returns {JSX.Element} The rendered component.
  *
  * @description
- * - Fetches user, client, and new client lists from the server.
- * - Displays loading indicator while fetching data.
- * - Handles and displays errors if any occur during data fetching.
- * - Renders different tabs and components based on the user's role:
- *   - Admin: Can view clients, pending clients, user list, and create new users.
- *   - Client Admin: Can view client details, user list and create new users.
- * - Uses context to get the current user information.
+ *
  */
 const ManageData = () => {
 	const { user } = useContext(UserContext);
-	
+	const [lgas, setLgas] = useState([]);
+	const [trendTypes, setTrendTypes] = useState({public: [], user: []});
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 
@@ -43,14 +39,16 @@ const ManageData = () => {
 			setLoading(true);
 			setError(null);
 
-			const [lgaList, lgaError] = await getRequest("lga/list");
+			const [lgaList, lgaError] = await getRequest("lga/list", false);
+			const [trendTypes, trendTypesError] = await getRequest("trends/types");
 
 			if (lgaError) {
 				setError(lgaError.message);
+			} else if (trendTypesError) {
+				setError(trendTypesError.message);
 			} else {
-				
-
-				
+				setLgas(lgaList.results);
+				setTrendTypes(trendTypes.results);
 			}
 
 			setLoading(false);
@@ -72,10 +70,24 @@ const ManageData = () => {
 			<Row>
 				<Col>
 					<Tabs defaultActiveKey="data" id="manage-data-tabs">
+						<Tab eventKey="lgas" title="LGAs Covered">
+							<div className="mt-3">
+								<h3>Local Government Areas</h3>
+								<LocalGovernmentAreas lgas={lgas} />
+							</div>
+						</Tab>
+
 						{user.role === "admin" && (
 							<Tab eventKey="dataType" title="Data Types">
 								<div className="mt-3">
 									<h3>Data Types</h3>
+									{trendTypes && trendTypes.public.length > 0 && (
+										<ul>
+											{trendTypes.public.map((type) => (
+												<li key={"key_" + type.id}>{type.name}</li>
+											))}
+										</ul>
+									)}
 								</div>
 							</Tab>
 						)}

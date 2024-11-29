@@ -41,6 +41,13 @@ router.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 // POST Request: retrieve tourism trends
 router.use("/trends", verifyJwtAndAddUser, require("./trends/publicData"));
 
+// POST Request: retrieve tourism trend types
+router.use(
+	"/trends/types",
+	verifyJwtAndAddUser,
+	require("./trends/trendTypes.js")
+);
+
 /** USER TREND DATA */
 
 // POST Request: Retrieve user uploaded data
