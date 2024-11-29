@@ -70,7 +70,7 @@ const RenewSubscription = () => {
 			setState((s) => ({ ...s, loading: false }));
 		};
 		fetchData();
-	}, []);
+	}, [user.client.lgaIds]);
 
 	if (state.error) {
 		return <Error error={state.error} />;

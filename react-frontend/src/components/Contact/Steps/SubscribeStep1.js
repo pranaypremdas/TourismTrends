@@ -95,9 +95,7 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 						{clientType && (
 							<Form.Group className="mb-3" controlId="formLocation">
 								<Form.Label>
-									{clientType === "Business"
-										? "Business"
-										: "Organisation" + " Name"}
+									{clientType === "Business" ? "Business" : "Organisation Name"}
 								</Form.Label>
 								<Form.Control
 									type="text"

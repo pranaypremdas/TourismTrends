@@ -1,5 +1,5 @@
 import React from "react";
-import { Container, Row, Col, Button, ProgressBar } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-bootstrap";
 
 const Stepper = ({ currentStep, setCurrentStep, steps, useButtons = true }) => {
 	const nextStep = () => {

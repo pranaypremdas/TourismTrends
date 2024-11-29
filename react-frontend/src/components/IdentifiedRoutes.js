@@ -11,6 +11,7 @@ import Profile from "./user/Profile";
 import Contact from "./Contact/Contact";
 import Dashboard from "./Dashboard";
 import ManageUsers from "./admin/users/ManageUsers";
+import ManageData from "./admin/data/ManageData";
 import FirstUser from "./user/FirstUser";
 import RenewSubscription from "./Contact/RenewSubscription";
 
@@ -68,6 +69,7 @@ function IdentifiedRoutes() {
 					{user && (user.role === "admin" || user.role === "client_admin") && (
 						<>
 							<Route path="/admin/users" element={<ManageUsers />} />
+							<Route path="/admin/data" element={<ManageData />} />
 						</>
 					)}
 

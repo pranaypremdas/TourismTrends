@@ -57,14 +57,12 @@ const ManageUsers = () => {
 					? [{ results: [] }, null]
 					: await getRequest("client/new/list");
 
-			if (userError || clientError || newClientError) {
-				setError(
-					userError
-						? userError.message
-						: clientError
-						? clientError.message
-						: newClientError.message
-				);
+			if (userError) {
+				setError(userError.message);
+			} else if (clientError) {
+				setError(clientError.message);
+			} else if (newClientError) {
+				setError(newClientError.message);
 			} else {
 				const users = userList.results.map((user) => {
 					const client = clientList.results.find(
@@ -97,7 +95,7 @@ const ManageUsers = () => {
 			setLoading(false);
 		};
 		getUsers();
-	}, []);
+	}, [user.role]);
 
 	if (loading) {
 		return <Loading />;
