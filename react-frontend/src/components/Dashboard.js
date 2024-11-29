@@ -63,7 +63,7 @@ const Dashboard = () => {
 	// 	trendType: "ave_historical_occupancy",
 	// });
 
-	// setStartDate(s => ({ ...s, startDate: filterState.startDate }));
+	// setFilterState(s => ({ ...s, startDate: filterState.startDate }));
 
 	const [columnDefs] = useState([
 		{ headerName: "Date", field: "date" },
