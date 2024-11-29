@@ -12,10 +12,10 @@ const Header = () => {
 				<Navbar.Brand href="#home">Tourism Trends</Navbar.Brand>
 				<Navbar.Toggle aria-controls="basic-navbar-nav" />
 				<Navbar.Collapse id="basic-navbar-nav">
-					<Nav className="ml-auto">
+					<Nav className="ml-auto justify-content-end">
 						<Nav.Link href="/">Home</Nav.Link>
 						<Nav.Link href="/dashboard">Dashboard</Nav.Link>
-						<Nav.Link href="/contact">Contact</Nav.Link>
+						{!user && <Nav.Link href="/contact">Pricing</Nav.Link>}
 
 						{!user && <Nav.Link href="/login">Login</Nav.Link>}
 						{user && user.role === "user" && (
@@ -26,10 +26,13 @@ const Header = () => {
 								<NavDropdown.Item href="/admin/users">
 									Manage Users
 								</NavDropdown.Item>
-								<NavDropdown.Item href="/admin/settings">
-									Upload Data
+								<NavDropdown.Item href="/admin/data">
+									Manage Data
 								</NavDropdown.Item>
 								<NavDropdown.Divider />
+								<NavDropdown.Item href="/user/profile">
+									My Profile
+								</NavDropdown.Item>
 							</NavDropdown>
 						)}
 						{user && user.role === "admin" && (
@@ -37,23 +40,16 @@ const Header = () => {
 								<NavDropdown.Item href="/admin/users">
 									Manage Users
 								</NavDropdown.Item>
-								<NavDropdown.Item href="/admin/clients">
-									Manage Clients
-								</NavDropdown.Item>
-								<NavDropdown.Item href="/admin/settings">
-									Upload Data
-								</NavDropdown.Item>
-								<NavDropdown.Item href="/admin/settings">
-									Settings
+								<NavDropdown.Item href="/admin/data">
+									Manage Data
 								</NavDropdown.Item>
 								<NavDropdown.Divider />
 								<NavDropdown.Item href="/admin/reports">
 									Reports
 								</NavDropdown.Item>
-								<NavDropdown.Item href="/admin/logs">Logs</NavDropdown.Item>
 								<NavDropdown.Divider />
 								<NavDropdown.Item href="/user/profile">
-									Profile
+									My Profile
 								</NavDropdown.Item>
 							</NavDropdown>
 						)}

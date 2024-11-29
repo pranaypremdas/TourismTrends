@@ -7,8 +7,6 @@ var generator = require("generate-password");
 /**
  * POST Request: Register a new user
  * @param {string} email - email of the user
- * @param {string} role - role of the user
- * @param {string} client_id - client_id of the user
  * @returns {object} - status of the request
  *
  */
@@ -95,31 +93,34 @@ var generator = require("generate-password");
  */
 router.post("/", async (req, res) => {
 	try {
-		// process body of request
-		let email = req.body.email ? req.body.email[0] : null;
-		let role = req.body.role ? req.body.role[0] : "user";
-		let client_id = req.body.client_id ? req.body.client_id[0] : null;
-
-		// check client_id (have already checked email and password)
-		if (!client_id) {
+		// check if users already exist
+		let userCount = await req.db("users").count("id as count").first();
+		if (userCount.count > 0) {
 			res.status(400).json({
 				error: true,
-				message: "Request body incomplete, client_id is required",
+				message: "Users already exist",
+				actionFirstUser: false,
 			});
 			return;
 		}
 
-		if (req.user.role === "client_admin") {
-			client_id = req.user.client_id;
-			role = role === "admin" ? "user" : role; // client_admin can only create users or other client_admins
+		if (userCount.count === 0 && req.body.checkFirstUser) {
+			res.status(200).json({
+				error: false,
+				message: "No users exist",
+				actionFirstUser: true,
+			});
+			return;
 		}
 
-		// check if email already exists
-		let user = await req.db("users").where("email", email);
-		if (user.length > 0) {
-			res.status(409).json({
+		// process body of request
+		let email = req.body.email;
+		let name = req.body.name;
+
+		if (!email || !name) {
+			res.status(400).json({
 				error: true,
-				message: "User already exists",
+				message: "Request body incomplete, email and name is required",
 			});
 			return;
 		}
@@ -134,11 +135,32 @@ router.post("/", async (req, res) => {
 		// insert user into database
 		await req.db("users").insert({
 			id: uuidv4(), // obviscate the user id
-			client_id,
-			email,
-			role,
-			hash,
+			client_id: 1,
+			email: email,
+			name: name,
+			role: "admin",
+			hash: hash,
 		});
+
+		await req.db("clients").insert({
+			id: 1,
+			c_name: "Tourism Trends",
+			c_type: "admin",
+			domain: "tourismtrends.com",
+			licenses: 9999,
+			expires_at: "9999-12-31 23:59:59",
+		});
+
+		let lgas = await req.db("lgas").select("id");
+
+		let lgaData = lgas.map((lga) => {
+			return {
+				lga_id: lga.id,
+				client_id: 1,
+			};
+		});
+
+		await req.db("client_lgas").insert(lgaData);
 
 		res.status(201).json({
 			error: false,
@@ -146,8 +168,6 @@ router.post("/", async (req, res) => {
 			results: {
 				email,
 				password,
-				role,
-				client_id,
 			},
 		});
 	} catch (error) {

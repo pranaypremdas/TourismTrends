@@ -16,10 +16,10 @@ app.use(require("./middleware/logging/logAccessRequest"));
 const allowedOrigins = ["http://localhost:3000", "https://localhost:3000"];
 
 app.use(
-  cors({
-    origin: "*",
-    credentials: true,
-  })
+	cors({
+		origin: "http://localhost:3000",
+		credentials: true,
+	})
 );
 
 // add in knex middleware

@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 
 // Bootstrap Components
 import { Form, Button, Container, Alert, Card } from "react-bootstrap";
 
 // Custom Components
 import postRequest from "../../lib/postRequest";
+import { UserContext } from "../../../contexts/UserContext";
 
-const RegisterUser = () => {
+const CreateUser = ({ clients }) => {
+	const { user } = useContext(UserContext);
+	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
 	const [results, setResults] = useState(null);
+	const [client, setClient] = useState(user ? user.client_id : null);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 
@@ -19,8 +22,9 @@ const RegisterUser = () => {
 		setError(null);
 
 		const [data, error] = await postRequest("user/register", {
+			name,
 			email,
-			password,
+			client_id: user.role === "admin" ? client : user.client_id,
 		});
 
 		if (error) {
@@ -33,14 +37,19 @@ const RegisterUser = () => {
 	};
 
 	return (
-		<Container
-			className="d-flex justify-content-center align-items-center"
-			style={{ minHeight: "100vh" }}
-		>
+		<Container className="d-flex justify-content-center mt-4 mb-4">
 			<Card style={{ width: "100%", maxWidth: "400px" }}>
 				<Card.Body>
-					<h2 className="text-center mb-4">Register New User</h2>
 					<Form onSubmit={handleRegister}>
+						<Form.Group id="name" className="mb-3">
+							<Form.Label>Name</Form.Label>
+							<Form.Control
+								type="text"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								required
+							/>
+						</Form.Group>
 						<Form.Group id="email" className="mb-3">
 							<Form.Label>Email</Form.Label>
 							<Form.Control
@@ -50,15 +59,23 @@ const RegisterUser = () => {
 								required
 							/>
 						</Form.Group>
-						<Form.Group id="password" className="mb-3">
-							<Form.Label>Password</Form.Label>
-							<Form.Control
-								type="password"
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								required
-							/>
-						</Form.Group>
+						{user && user.role === "admin" && (
+							<Form.Group id="client" className="mb-3">
+								<Form.Label>Client</Form.Label>
+								<Form.Select
+									value={client}
+									onChange={(e) => setClient(e.target.value)}
+								>
+									<option value={null}>Select a client</option>
+									{clients &&
+										clients.map((client) => (
+											<option key={client.id} value={client.id}>
+												{client.c_name}
+											</option>
+										))}
+								</Form.Select>
+							</Form.Group>
+						)}
 						<Button type="submit" className="w-100" disabled={loading}>
 							{loading ? "Registering..." : "Register"}
 						</Button>
@@ -79,4 +96,4 @@ const RegisterUser = () => {
 	);
 };
 
-export default RegisterUser;
+export default CreateUser;

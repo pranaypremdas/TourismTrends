@@ -3,7 +3,7 @@ module.exports = (req, res, next) => {
 		console.log(error);
 		res.status(500).json({
 			error: true,
-			message: `Internal server error.`,
+			message: `Internal server error. ${error.message}`,
 		});
 		return;
 	};

@@ -18,14 +18,11 @@ const Profile = () => {
 	};
 
 	return (
-		<Container
-			className="d-flex justify-content-center align-items-center"
-			style={{ minHeight: "100vh" }}
-		>
+		<Container className="d-flex justify-content-center mt-4 mb-4">
 			<Card style={{ width: "100%", maxWidth: "400px" }}>
 				<Card.Body>
 					<h2 className="text-center mb-4">Profile</h2>
-					{user ? (
+					{user && (
 						<>
 							<p>
 								<strong>Email:</strong> {user.email}
@@ -34,17 +31,20 @@ const Profile = () => {
 								<strong>Role:</strong> {user.role}
 							</p>
 							<p>
-								<strong>Client Name:</strong> {user.client_name}
+								<strong>Client Name:</strong> {user.client.name}
 							</p>
 							<p>
-								<strong>Client Type:</strong> {user.client_type}
+								<strong>Client Type:</strong> {user.client.type}
 							</p>
+							<p>
+								<strong>Expires At:</strong>{" "}
+								{new Date(user.client.expires_at).toLocaleString()}
+							</p>
+
 							<Button variant="danger" onClick={handleLogout} className="w-100">
 								Logout
 							</Button>
 						</>
-					) : (
-						<p>No user information available.</p>
 					)}
 				</Card.Body>
 			</Card>

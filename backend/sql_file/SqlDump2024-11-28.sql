@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.36, for Win64 (x86_64)
 --
 -- Host: localhost    Database: tourism
 -- ------------------------------------------------------
@@ -38,7 +38,7 @@ CREATE TABLE `client_lgas` (
 
 LOCK TABLES `client_lgas` WRITE;
 /*!40000 ALTER TABLE `client_lgas` DISABLE KEYS */;
-INSERT INTO `client_lgas` VALUES (1,1),(3,1),(1,2),(4,2),(1,3),(2,3),(1,4),(5,4);
+INSERT INTO `client_lgas` VALUES (1,1),(19,1),(1,2),(1,3),(18,3),(1,4);
 /*!40000 ALTER TABLE `client_lgas` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -55,10 +55,11 @@ CREATE TABLE `clients` (
   `c_type` varchar(255) NOT NULL,
   `domain` varchar(255) NOT NULL,
   `licenses` int NOT NULL,
+  `expires_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -67,7 +68,7 @@ CREATE TABLE `clients` (
 
 LOCK TABLES `clients` WRITE;
 /*!40000 ALTER TABLE `clients` DISABLE KEYS */;
-INSERT INTO `clients` VALUES (1,'Tourism Trends','owner','tourismtrends.com',9999,'2024-11-03 07:30:58','2024-11-03 07:30:58'),(2,'Noosa Fun','business','noosafun.com',10,'2024-11-03 07:30:58','2024-11-03 07:30:58'),(3,'Cairns Test','business','testclient.org',20,'2024-11-03 07:30:58','2024-11-03 07:30:58'),(4,'Gold Coast City Council','government/tourism board','gccc.gov.au',15,'2024-11-03 07:30:58','2024-11-03 07:30:58'),(5,'Visit Whitsundays','government/tourism board','visitwhitsundays.com',25,'2024-11-03 07:30:58','2024-11-03 07:30:58');
+INSERT INTO `clients` VALUES (1,'Tourism Trends','admin','tourismtrends.com',9999,'9999-12-31 23:59:59','2024-11-28 00:03:46','2024-11-27 08:41:53'),(18,'Ian\'s Hotels','Business','business.com',8,'2025-11-27 19:01:52','2024-11-28 00:04:34','2024-11-27 09:01:52'),(19,'Cairns Tourism','Government','person.com',4,'2025-11-28 16:56:24','2024-11-28 06:56:24','2024-11-27 09:09:48');
 /*!40000 ALTER TABLE `clients` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -94,6 +95,42 @@ LOCK TABLES `lgas` WRITE;
 /*!40000 ALTER TABLE `lgas` DISABLE KEYS */;
 INSERT INTO `lgas` VALUES (1,'Cairns','Queensland'),(2,'Gold Coast','Queensland'),(3,'Noosa','Queensland'),(4,'Whitsunday','Queensland');
 /*!40000 ALTER TABLE `lgas` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `new_clients`
+--
+
+DROP TABLE IF EXISTS `new_clients`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `new_clients` (
+  `id` char(36) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `c_name` varchar(255) DEFAULT NULL,
+  `c_type` varchar(255) DEFAULT NULL,
+  `lgaIds` varchar(255) DEFAULT NULL,
+  `licenses` int DEFAULT NULL,
+  `message` varchar(255) DEFAULT NULL,
+  `amount` int DEFAULT NULL,
+  `paymentMethod` varchar(255) DEFAULT NULL,
+  `quoteRef` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT 'pending',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `new_clients`
+--
+
+LOCK TABLES `new_clients` WRITE;
+/*!40000 ALTER TABLE `new_clients` DISABLE KEYS */;
+INSERT INTO `new_clients` VALUES ('ab29fc64-f400-4bcc-9f76-0ce0d95015f0','Mr Ian Business','ian@business.com','Ian\'s Hotels','Business','3',8,'',259,'credit card','QRef-99fca347','registered','2024-11-27 05:31:43','2024-11-27 05:31:43'),('c426503c-5283-470b-a2a7-e9d7bd396e75','A Person','alan@person.com','Cairns Tourism','Government','1',4,'',238,'credit card','QRef-317f0fce','registered','2024-11-27 06:30:21','2024-11-27 06:30:21');
+/*!40000 ALTER TABLE `new_clients` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -133,15 +170,15 @@ DROP TABLE IF EXISTS `users`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id` char(36) NOT NULL,
-  `client_id` varchar(255) NOT NULL,
+  `client_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `role` varchar(255) NOT NULL,
   `hash` varchar(60) NOT NULL,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `role` (`role`)
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -151,7 +188,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('e24c3aff-1349-42cd-9dad-67a6cd009401','1','admin@tourismtrends.com','admin','$2b$10$u..sMG4JSEIb/0xiY.pyOuTgIxVxUAdRpmChYgMQKNIoIuFHcYXYO','2024-11-03 03:00:09','2024-11-03 03:00:09');
+INSERT INTO `users` VALUES ('1fe70071-bee2-4f56-9697-7d9553a8c584',18,'Mr Ian Business','ian@business.com','client_admin','$2b$10$InhYKXi9XKNHbpfaCJiv5uAtwb6TV.EG2sEW/qdR2bed/9PnwvAFO','2024-11-27 09:01:52','2024-11-27 09:01:52'),('d5631131-b0fa-41d4-8c0a-6440c6d3e7a3',1,'Site Admin','admin@tourismtrends.com','admin','$2b$10$8k1VOCNKK/061qiwQgwLv.jxYAGCk.3BUg8tHj1zJiH2zActCgfOC','2024-11-27 08:41:53','2024-11-27 08:41:53'),('f8c5129b-dc84-44cf-8bea-c58e454e6eb1',19,'A Person','alan@person.com','client_admin','$2b$10$vTCDSklwkMrZ4j9K.3rcLOvsNePePKvDNgRt1oVnId3I6o3JT4Zj6','2024-11-27 09:09:48','2024-11-27 09:09:48');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -164,4 +201,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-03 20:49:57
+-- Dump completed on 2024-11-28 17:24:23
