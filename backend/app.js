@@ -17,7 +17,7 @@ const allowedOrigins = ["http://localhost:3000", "https://localhost:3000"];
 
 app.use(
 	cors({
-		origin: "http://localhost:3000",
+		origin: allowedOrigins,
 		credentials: true,
 	})
 );
@@ -33,13 +33,13 @@ app.use("/", require("./routes/index"));
 
 // error handler
 app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
+	// set locals, only providing error in development
+	res.locals.message = err.message;
+	res.locals.error = req.app.get("env") === "development" ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render("error");
+	// render the error page
+	res.status(err.status || 500);
+	res.render("error");
 });
 
 module.exports = app;
