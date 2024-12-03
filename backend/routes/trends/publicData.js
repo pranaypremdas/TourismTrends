@@ -123,7 +123,7 @@ router.post("/", async (req, res) => {
 		let region = req.body.region || [1, 2, 3, 4];
 
 		// region includes a value greater than 4, return an error
-		if (!Array.isArray(region) || region.some((r) => r > 4)) {
+		if (!Array.isArray(region)) {
 			res.status(400).json({
 				error: true,
 				message: "Invalid region",
@@ -210,7 +210,7 @@ router.post("/", async (req, res) => {
 		if (!results || results.length === 0) {
 			res.status(400).json({
 				error: true,
-				message: "No region found",
+				message: "No results found",
 			});
 			return;
 		}
