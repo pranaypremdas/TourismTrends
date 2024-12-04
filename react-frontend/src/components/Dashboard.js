@@ -264,7 +264,7 @@ const Dashboard = () => {
         activeKey={dataViewTab}
         onSelect={(k) => setDataViewTab(k)}
       >
-        <Nav variant="tabs" className="mb-4">
+        <Nav variant="tabs" className="mb-4 mt-4">
           <Nav.Item>
             <Nav.Link eventKey="graph">Graph</Nav.Link>
           </Nav.Item>
