@@ -1,20 +1,31 @@
 import React, { useState, useEffect } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Button,
-  Tab,
-  Nav,
-} from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Tab, Nav } from "react-bootstrap";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { Line } from "react-chartjs-2";
 import postRequest from "./lib/postRequest";
 import Error from "./Error/Error";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const Dashboard = () => {
   const [rowData, setRowData] = useState([]);
@@ -23,42 +34,22 @@ const Dashboard = () => {
   const [endDate, setEndDate] = useState("2024-01-31");
   const [startYear, setStartYear] = useState("2023");
   const [endYear, setEndYear] = useState("2024");
-  const [trendType, setTrendType] = useState("ave_historical_occupancy"); // New state
+  const [trendType, setTrendType] = useState("ave_historical_occupancy");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("customDates");
-  const [metadata, setMetadata] = useState(null);
+  const [dataViewTab, setDataViewTab] = useState("graph");
 
   const [columnDefs] = useState([
     { headerName: "Date", field: "date" },
     { headerName: "LGA Name", field: "lga_name" },
-    { headerName: "Value", field: trendType }, // Dynamic field
+    { headerName: "Value", field: trendType },
   ]);
 
   const defaultColDef = {
     sortable: true,
     filter: true,
     resizable: true,
-  };
-
-  const calculateStatistics = (data) => {
-    const values = data.map((item) => item[trendType]);
-    const count = values.length;
-    const sum = values.reduce((acc, value) => acc + value, 0);
-    const avg = sum / count;
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const stdDev = Math.sqrt(
-      values.reduce((acc, value) => acc + Math.pow(value - avg, 2), 0) / count
-    );
-
-    return {
-      count,
-      avg,
-      min,
-      max,
-      stdDev,
-    };
   };
 
   const fetchData = async (isYearOnYear = false) => {
@@ -71,12 +62,12 @@ const Dashboard = () => {
         ? {
             region: [1, 2, 3],
             dateRange: [yearOnYearStartDate, yearOnYearEndDate],
-            type: [trendType], // Use selected trendType
+            type: [trendType],
           }
         : {
             region: [1, 2, 3],
             dateRange: [startDate, endDate],
-            type: [trendType], // Use selected trendType
+            type: [trendType],
           };
 
       const [trendData, trendError] = await postRequest("trends", requestBody);
@@ -87,13 +78,10 @@ const Dashboard = () => {
         const mappedData = trendData.results.map((item) => ({
           date: item.date,
           lga_name: item.lga_name,
-          [trendType]: item[trendType], // Dynamic field mapping
+          [trendType]: item[trendType],
         }));
 
         setRowData(mappedData);
-
-        const stats = calculateStatistics(mappedData);
-        setMetadata(stats);
 
         const groupedData = mappedData.reduce((acc, item) => {
           if (!acc[item.lga_name]) {
@@ -101,7 +89,7 @@ const Dashboard = () => {
           }
           acc[item.lga_name].push({
             x: item.date,
-            y: item[trendType], // Dynamic field for chart
+            y: item[trendType],
           });
           return acc;
         }, {});
@@ -126,7 +114,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchData(activeTab === "yearOnYear");
-  }, [activeTab, trendType]); // Re-fetch when trendType changes
+  }, [activeTab, trendType]);
 
   if (error) {
     return <Error message={error} />;
@@ -155,7 +143,7 @@ const Dashboard = () => {
         </Form.Control>
       </Form.Group>
 
-      {/* Tabs for Custom and Year-on-Year */}
+      {/* Main Tabs */}
       <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
         <Nav variant="tabs" className="mb-4">
           <Nav.Item>
@@ -255,54 +243,51 @@ const Dashboard = () => {
         </Tab.Content>
       </Tab.Container>
 
-      {/* Metadata Display */}
-      {metadata && (
-        <Row className="my-4">
-          <Col>
-            <Card>
-              <Card.Header>Summary Statistics</Card.Header>
-              <Card.Body>
-                <p>Average: {metadata.avg.toFixed(2)}</p>
-                <p>Max: {metadata.max}</p>
-                <p>Min: {metadata.min}</p>
-                <p>Standard Deviation: {metadata.stdDev.toFixed(2)}</p>
-                <p>Count: {metadata.count}</p>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )}
-
-      {/* Chart */}
-      {chartData && (
-        <Row className="mb-4">
-          <Col>
-            <Card>
-              <Card.Header>Occupancy Trends</Card.Header>
-              <Card.Body>
-                <Line data={chartData} />
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      )}
-
-      {/* AgGrid Table */}
-      <Row>
-        <Col>
-          <div
-            className="ag-theme-alpine"
-            style={{ height: 400, width: "100%" }}
-          >
-            <AgGridReact
-              rowData={rowData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              pagination
-            />
-          </div>
-        </Col>
-      </Row>
+      {/* Nested Tabs for Data View */}
+      <Tab.Container
+        activeKey={dataViewTab}
+        onSelect={(k) => setDataViewTab(k)}
+      >
+        <Nav variant="tabs" className="mb-4">
+          <Nav.Item>
+            <Nav.Link eventKey="graph">Graph</Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link eventKey="table">Table</Nav.Link>
+          </Nav.Item>
+        </Nav>
+        <Tab.Content>
+          <Tab.Pane eventKey="table">
+            {/* AgGrid Table */}
+            <Row>
+              <Col>
+                <div
+                  className="ag-theme-alpine"
+                  style={{ height: 400, width: "100%" }}
+                >
+                  <AgGridReact
+                    rowData={rowData}
+                    columnDefs={columnDefs}
+                    defaultColDef={defaultColDef}
+                  />
+                </div>
+              </Col>
+            </Row>
+          </Tab.Pane>
+          <Tab.Pane eventKey="graph">
+            {/* Chart */}
+            <Row>
+              <Col>
+                {chartData ? (
+                  <Line data={chartData} />
+                ) : (
+                  <p>No data available for chart.</p>
+                )}
+              </Col>
+            </Row>
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
     </Container>
   );
 };
