@@ -28,6 +28,21 @@ ChartJS.register(
   Legend
 );
 
+const calculateMetadata = (data, key) => {
+  const values = data.map((item) => item[key]).filter((v) => v != null);
+  if (!values.length) return null;
+
+  const sum = values.reduce((a, b) => a + b, 0);
+  const mean = sum / values.length;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const variance =
+    values.reduce((acc, v) => acc + (v - mean) ** 2, 0) / values.length;
+  const stdDev = Math.sqrt(variance);
+
+  return { min, max, mean, stdDev };
+};
+
 const Dashboard = () => {
   const { user } = useContext(UserContext);
   const [rowData, setRowData] = useState([]);
@@ -41,6 +56,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("customDates");
   const [dataViewTab, setDataViewTab] = useState("graph");
+  const [metadata, setMetadata] = useState(null);
 
   const [columnDefs] = useState([
     { headerName: "Date", field: "date" },
@@ -105,6 +121,9 @@ const Dashboard = () => {
         setChartData({
           datasets,
         });
+
+        const calculatedMetadata = calculateMetadata(mappedData, trendType);
+        setMetadata(calculatedMetadata);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -144,7 +163,6 @@ const Dashboard = () => {
         </Form.Control>
       </Form.Group>
 
-      {/* Main Tabs */}
       <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
         <Nav variant="tabs" className="mb-4">
           <Nav.Item>
@@ -156,7 +174,6 @@ const Dashboard = () => {
         </Nav>
         <Tab.Content>
           <Tab.Pane eventKey="customDates">
-            {/* Custom Dates Form */}
             <Row>
               <Col>
                 <Form>
@@ -196,7 +213,6 @@ const Dashboard = () => {
             </Row>
           </Tab.Pane>
           <Tab.Pane eventKey="yearOnYear">
-            {/* Year-on-Year Form */}
             <Row>
               <Col>
                 <Form>
@@ -244,7 +260,6 @@ const Dashboard = () => {
         </Tab.Content>
       </Tab.Container>
 
-      {/* Nested Tabs for Data View */}
       <Tab.Container
         activeKey={dataViewTab}
         onSelect={(k) => setDataViewTab(k)}
@@ -258,37 +273,70 @@ const Dashboard = () => {
           </Nav.Item>
         </Nav>
         <Tab.Content>
-          <Tab.Pane eventKey="table">
-            {/* AgGrid Table */}
+          <Tab.Pane eventKey="graph">
             <Row>
               <Col>
-                <div
-                  className="ag-theme-alpine"
-                  style={{ height: 400, width: "100%" }}
-                >
+                {chartData && (
+                  <Line
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: trendType,
+                        },
+                      },
+                    }}
+                    data={chartData}
+                  />
+                )}
+              </Col>
+            </Row>
+          </Tab.Pane>
+          <Tab.Pane eventKey="table">
+            <Row>
+              <Col>
+                <div className="ag-theme-alpine" style={{ height: "500px" }}>
                   <AgGridReact
                     rowData={rowData}
                     columnDefs={columnDefs}
                     defaultColDef={defaultColDef}
+                    pagination
                   />
                 </div>
               </Col>
             </Row>
           </Tab.Pane>
-          <Tab.Pane eventKey="graph">
-            {/* Chart */}
-            <Row>
-              <Col>
-                {chartData ? (
-                  <Line data={chartData} />
-                ) : (
-                  <p>No data available for chart.</p>
-                )}
-              </Col>
-            </Row>
-          </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
+
+      {metadata && (
+        <div className="mt-4">
+          <h5>Summary Statistics:</h5>
+          <div className="card">
+            <div className="card-body">
+              <div className="row text-center">
+                <div className="col-md-3">
+                  <h6>Minimum</h6>
+                  <p className="text-primary">{metadata.min}</p>
+                </div>
+                <div className="col-md-3">
+                  <h6>Maximum</h6>
+                  <p className="text-primary">{metadata.max}</p>
+                </div>
+                <div className="col-md-3">
+                  <h6>Average</h6>
+                  <p className="text-primary">{metadata.mean.toFixed(2)}</p>
+                </div>
+                <div className="col-md-3">
+                  <h6>Standard Deviation</h6>
+                  <p className="text-primary">{metadata.stdDev.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Container>
   );
 };
