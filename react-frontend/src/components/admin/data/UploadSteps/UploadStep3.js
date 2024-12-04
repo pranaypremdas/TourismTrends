@@ -1,0 +1,84 @@
+import React from "react";
+
+// Bootstrap Components
+import { Container, Card, Table, Button } from "react-bootstrap";
+
+// custom components
+import postRequest from "../../../lib/postRequest";
+
+function UploadStep3({ state, setState, formData, setFormData }) {
+	console.log(formData);
+
+	const handleUpload = async () => {
+		const data = formData.fileData.map((row) => {
+			let newRow = {};
+			formData.colTypes.forEach((col) => {
+				newRow[col.id] = row[col.col];
+			});
+			return newRow;
+		});
+
+		setState((s) => ({ ...s, loading: true, error: null }));
+		let [response, error] = await postRequest("trends/user/add", {
+			data: data,
+		});
+		if (error) {
+			setState((s) => ({ ...s, loading: false, error }));
+		} else {
+			// setState((s) => ({ ...s, loading: false, currentStep: 4 }));
+			console.log(response);
+		}
+	};
+
+	return (
+		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
+			{formData.fileData && (
+				<Card className="p-4">
+					<Card.Title className="text-center">
+						<h5>Validate Data</h5>
+					</Card.Title>
+					<Card.Body>
+						<Card.Text>First 10 rows of the uploaded data...</Card.Text>
+						<Table>
+							<thead>
+								<tr>
+									<td>Row</td>
+									{formData.colTypes.map((column, index) => {
+										if (column.colName === "date") {
+											return <td key={"header_date"}>Date</td>;
+										}
+
+										let foundType = state.trendTypes.public.find(
+											(tt) => tt.id === column.colName
+										);
+
+										return (
+											column.colName !== "ignore" &&
+											foundType && (
+												<td key={"header_" + foundType.id}>{foundType.name}</td>
+											)
+										);
+									})}
+								</tr>
+							</thead>
+							<tbody>
+								{formData.fileData.slice(0, 10).map((row, index) => (
+									<tr key={index}>
+										<td>{index + 1}</td>
+										{formData.colTypes.map(
+											(column, index) =>
+												column.colName !== "ignore" && <td>{row[column.id]}</td>
+										)}
+									</tr>
+								))}
+							</tbody>
+						</Table>
+						<Button onClick={() => handleUpload()}>Upload</Button>
+					</Card.Body>
+				</Card>
+			)}
+		</Container>
+	);
+}
+
+export default UploadStep3;

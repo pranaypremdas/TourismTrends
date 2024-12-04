@@ -49,22 +49,25 @@ const Stepper = ({ currentStep, setCurrentStep, steps, useButtons = true }) => {
 			</Row>
 			{useButtons && (
 				<Row className="mt-4">
-					<Col>
-						<Button
-							variant="secondary"
-							onClick={prevStep}
-							disabled={currentStep === 1}
-						>
-							Previous
-						</Button>
-						<Button
-							variant="primary"
-							onClick={nextStep}
-							className="ml-2"
-							disabled={currentStep === steps.length}
-						>
-							Next
-						</Button>
+					<Col className="d-flex justify-content-between">
+						{(currentStep > 1 && (
+							<Button
+								variant="secondary"
+								onClick={prevStep}
+								disabled={currentStep === 1}
+							>
+								Back
+							</Button>
+						)) || <div></div>}
+						{(currentStep < steps.length && (
+							<Button
+								variant="primary"
+								onClick={nextStep}
+								disabled={currentStep === steps.length}
+							>
+								Next
+							</Button>
+						)) || <div></div>}
 					</Col>
 				</Row>
 			)}
