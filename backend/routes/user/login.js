@@ -141,6 +141,14 @@ router.post("/", async function (req, res, next) {
 			)
 			.first();
 
+		// Check if the user-specific table exists
+		let tableName =
+			req.user.client_id === 1 && req.user.role === "admin"
+				? `trends`
+				: `user_trends_${req.user.client_id}`;
+
+		const clientDataExists = await req.db.schema.hasTable(tableName);
+
 		// If passwords match, create a JWT token and return it
 		const createdDate = Math.floor(Date.now() / 1000);
 		const createdPlusOneDay = createdDate + 24 * 60 * 60; // Adds one day in second
@@ -156,6 +164,7 @@ router.post("/", async function (req, res, next) {
 					role: user.role || "user",
 					updated_at: user.updated_at,
 					created_at: user.created_at,
+					dataExists: clientDataExists,
 				},
 				client: {
 					id: user.client_id,

@@ -11,6 +11,8 @@ import Error from "../../Error/Error";
 import getRequest from "../../lib/getRequest";
 import { UserContext } from "../../../contexts/UserContext";
 import LocalGovernmentAreas from "./LocalGovernmentAreas";
+import DataTypes from "./DataTypes";
+import UploadData from "./UploadData";
 
 /**
  * ManageData component fetches and displays users and clients information.
@@ -70,38 +72,30 @@ const ManageData = () => {
 			<Row>
 				<Col>
 					<Tabs defaultActiveKey="data" id="manage-data-tabs">
-						<Tab eventKey="lgas" title="LGAs Covered">
+						<Tab eventKey="lgas" title="Valid LGAa">
 							<div className="mt-3">
-								<h3>Local Government Areas</h3>
+								<h3>Valid Local Government Areas</h3>
 								<LocalGovernmentAreas lgas={lgas} />
 							</div>
 						</Tab>
 
 						{user.role === "admin" && (
-							<Tab eventKey="dataType" title="Data Types">
+							<Tab eventKey="dataType" title="Valid Data Types">
 								<div className="mt-3">
-									<h3>Data Types</h3>
-									{trendTypes && trendTypes.public.length > 0 && (
-										<ul>
-											{trendTypes.public.map((type) => (
-												<li key={"key_" + type.id}>{type.name}</li>
-											))}
-										</ul>
-									)}
+									<h3>Valid Data Types</h3>
+									<DataTypes trendTypes={trendTypes} />
 								</div>
 							</Tab>
 						)}
-
-						{user.role === "client_admin" && (
-							<Tab eventKey="clientData" title="Your Data">
-								<div className="mt-3">
-									<h3>Your Data</h3>
-								</div>
-							</Tab>
-						)}
+						<Tab eventKey="existingData" title="Your Uploaded Data">
+							<div className="mt-3">
+								<h3>Your Uploaded Data</h3>
+							</div>
+						</Tab>
 						<Tab eventKey="uploadData" title="Upload Data">
 							<div className="mt-3">
 								<h3>Upload Data</h3>
+								<UploadData lgas={lgas} trendTypes={trendTypes} />
 							</div>
 						</Tab>
 					</Tabs>

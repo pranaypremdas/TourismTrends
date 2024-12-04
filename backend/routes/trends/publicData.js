@@ -120,10 +120,10 @@ let router = express.Router();
 router.post("/", async (req, res) => {
 	try {
 		// Get the region from the body or use the user's region if they are a business member
-		let region = req.body.region || [1, 2, 3, 4];
+		let region = req.body.region;
 
 		// region includes a value greater than 4, return an error
-		if (!Array.isArray(region) || region.some((r) => r > 4)) {
+		if (!Array.isArray(region)) {
 			res.status(400).json({
 				error: true,
 				message: "Invalid region",
@@ -210,7 +210,7 @@ router.post("/", async (req, res) => {
 		if (!results || results.length === 0) {
 			res.status(400).json({
 				error: true,
-				message: "No region found",
+				message: "No results found",
 			});
 			return;
 		}
