@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Container, Row, Col, Form, Button, Tab, Nav } from "react-bootstrap";
 import { AgGridReact } from "ag-grid-react";
+import { UserContext } from "../contexts/UserContext";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import {
@@ -28,6 +29,7 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  const { user } = useContext(UserContext);
   const [rowData, setRowData] = useState([]);
   const [chartData, setChartData] = useState(null);
   const [startDate, setStartDate] = useState("2024-01-01");
@@ -57,15 +59,14 @@ const Dashboard = () => {
     try {
       const yearOnYearStartDate = `${startYear}-01-01`;
       const yearOnYearEndDate = `${endYear}-12-31`;
-
       const requestBody = isYearOnYear
         ? {
-            region: [1, 2, 3],
+            region: user.client.lgaIds,
             dateRange: [yearOnYearStartDate, yearOnYearEndDate],
             type: [trendType],
           }
         : {
-            region: [1, 2, 3],
+            region: user.client.lgaIds,
             dateRange: [startDate, endDate],
             type: [trendType],
           };
