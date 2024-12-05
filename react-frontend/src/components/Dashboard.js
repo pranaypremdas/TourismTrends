@@ -134,6 +134,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchData(activeTab === "yearOnYear");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, trendType]);
 
   if (error) {
@@ -218,28 +219,22 @@ const Dashboard = () => {
                 <Form>
                   <Row>
                     <Col>
-                      <Form.Group controlId="startYear">
-                        <Form.Label>Start Year</Form.Label>
+                      <Form.Group controlId="regionDropdown">
+                        <Form.Label>Select Region</Form.Label>
                         <Form.Control
                           as="select"
-                          value={startYear}
-                          onChange={(e) => setStartYear(e.target.value)}
+                          onChange={(e) => setTrendType(e.target.value)} // Adjust this handler as needed
                         >
-                          <option value="2022">2022</option>
-                          <option value="2023">2023</option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="endYear">
-                        <Form.Label>End Year</Form.Label>
-                        <Form.Control
-                          as="select"
-                          value={endYear}
-                          onChange={(e) => setEndYear(e.target.value)}
-                        >
-                          <option value="2023">2023</option>
-                          <option value="2024">2024</option>
+                          {user.client.lgaIds &&
+                          user.client.lgaIds.length > 0 ? (
+                            user.client.lgaIds.map((lgaId) => (
+                              <option key={lgaId} value={lgaId}>
+                                {lgaId}
+                              </option>
+                            ))
+                          ) : (
+                            <option disabled>No regions available</option>
+                          )}
                         </Form.Control>
                       </Form.Group>
                     </Col>
