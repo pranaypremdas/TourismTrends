@@ -21,6 +21,7 @@ function UploadData({ lgas, trendTypes }) {
 	});
 
 	const [state, setState] = useState({
+		processing: false,
 		loading: false,
 		error: null,
 		lgas: lgas,
@@ -59,6 +60,7 @@ function UploadData({ lgas, trendTypes }) {
 			setCurrentStep={(step) => setState((s) => ({ ...s, currentStep: step }))}
 			steps={steps}
 			useButtons={true}
+			buttonContainerClass="d-flex justify-content-end"
 		/>
 	);
 }

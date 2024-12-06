@@ -72,30 +72,30 @@ const ManageData = () => {
 			<Row>
 				<Col>
 					<Tabs defaultActiveKey="data" id="manage-data-tabs">
-						<Tab eventKey="lgas" title="Valid LGAa">
+						<Tab eventKey="lgas" title="Valid LGAs">
 							<div className="mt-3">
 								<h3>Valid Local Government Areas</h3>
 								<LocalGovernmentAreas lgas={lgas} />
 							</div>
 						</Tab>
 
-						{user.role === "admin" && (
-							<Tab eventKey="dataType" title="Valid Data Types">
-								<div className="mt-3">
-									<h3>Valid Data Types</h3>
-									<DataTypes trendTypes={trendTypes} />
-								</div>
-							</Tab>
-						)}
-						<Tab eventKey="existingData" title="Your Uploaded Data">
+						<Tab eventKey="dataType" title="Valid Data Types">
 							<div className="mt-3">
-								<h3>Your Uploaded Data</h3>
+								<h3>Valid Data Types</h3>
+								<DataTypes trendTypes={trendTypes} />
 							</div>
 						</Tab>
+
 						<Tab eventKey="uploadData" title="Upload Data">
 							<div className="mt-3">
 								<h3>Upload Data</h3>
 								<UploadData lgas={lgas} trendTypes={trendTypes} />
+							</div>
+						</Tab>
+
+						<Tab eventKey="existingData" title="Your Uploaded Data">
+							<div className="mt-3">
+								<h3>Your Uploaded Data</h3>
 							</div>
 						</Tab>
 					</Tabs>

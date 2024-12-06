@@ -130,15 +130,6 @@ let router = express.Router();
  */
 router.post("/", async (req, res) => {
 	try {
-		// limit to "owner" and "business" client types
-		if (!["admin", "Business"].includes(req.user.client_type)) {
-			res.status(403).json({
-				error: true,
-				message: `Wrong client type, you are a ${req.user.client_type} client`,
-			});
-			return;
-		}
-
 		let data = req.body.data;
 		if (!data || Array.isArray(data) || data.length === 0) {
 			res.status(400).json({

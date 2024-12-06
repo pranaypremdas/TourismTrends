@@ -6,8 +6,6 @@ import { read, utils } from "xlsx";
 // Bootstrap Components
 import { Container, Card, Form } from "react-bootstrap";
 
-
-
 /**
  * Component for the first step of the upload process.
  *
@@ -22,7 +20,10 @@ import { Container, Card, Form } from "react-bootstrap";
  * @returns {JSX.Element} The UploadStep1 component.
  */
 function UploadStep1({ state, setState, formData, setFormData, user }) {
+	let processingPercentage = 0;
+
 	const handleFileUpload = (event) => {
+		setState((s) => ({ ...s, processing: true }));
 		setFormData((s) => ({ ...s, fileData: null }));
 		const file = event.target.files[0];
 		const reader = new FileReader();
@@ -36,8 +37,11 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 				);
 
 				// Ensure date format remains "yyyy-mm-dd"
-				let jsonDataWithDate = jsonData.map((row) => {
+				let jsonDataWithDate = jsonData.map((row, index) => {
 					let newRow = { ...row };
+					processingPercentage = Math.round(
+						((index + 1) / Object.keys(jsonData).length) * 100
+					);
 					Object.keys(row).forEach((key) => {
 						if (key === "date") {
 							newRow[key] = new Date(row[key]).toISOString().split("T")[0];
@@ -72,7 +76,7 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 			} catch (error) {
 				setState((s) => ({ ...s, error: error }));
 			} finally {
-				setState((s) => ({ ...s, loading: false }));
+				setState((s) => ({ ...s, loading: false, processing: false }));
 			}
 		};
 		reader.readAsArrayBuffer(file);
@@ -137,6 +141,9 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 								<li>Any number of valid data type columns</li>
 							</ul>
 						</Form.Text>
+						{state.processing && (
+							<Form.Text>Processing file... %{processingPercentage}</Form.Text>
+						)}
 					</Form.Group>
 				</Card.Body>
 			</Card>

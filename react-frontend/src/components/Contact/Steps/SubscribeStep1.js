@@ -52,7 +52,7 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 					<h2 className="text-center mb-4">Get A Quote / Contact Us</h2>
 					<Form onSubmit={handleGetQuote}>
 						<Form.Group className="mb-3" controlId="formName">
-							<Form.Label>Name</Form.Label>
+							<Form.Label>Your Name</Form.Label>
 							<Form.Control
 								type="text"
 								placeholder="Enter your name"

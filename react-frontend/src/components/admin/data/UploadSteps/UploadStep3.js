@@ -42,7 +42,7 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 						<Table>
 							<thead>
 								<tr>
-									<td>Row</td>
+									<td key={"header_row"}>Row</td>
 									{formData.colTypes.map((column, index) => {
 										if (column.colName === "date") {
 											return <td key={"header_date"}>Date</td>;
@@ -64,16 +64,20 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 							<tbody>
 								{formData.fileData.slice(0, 10).map((row, index) => (
 									<tr key={index}>
-										<td>{index + 1}</td>
+										<td key={"row_" + index}>{index + 1}</td>
 										{formData.colTypes.map(
 											(column, index) =>
-												column.colName !== "ignore" && <td>{row[column.id]}</td>
+												column.colName !== "ignore" && (
+													<td key={"row_" + index}>{row[column.id]}</td>
+												)
 										)}
 									</tr>
 								))}
 							</tbody>
 						</Table>
-						<Button onClick={() => handleUpload()}>Upload</Button>
+						<div className="d-flex justify-content-end">
+							<Button onClick={() => handleUpload()}>Upload</Button>
+						</div>
 					</Card.Body>
 				</Card>
 			)}

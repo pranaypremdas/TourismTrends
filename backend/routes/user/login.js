@@ -83,6 +83,20 @@ router.post("/", async function (req, res, next) {
 		let email = req.body.email;
 		let password = req.body.password;
 
+		if (
+			!email ||
+			!password ||
+			typeof email !== "string" ||
+			typeof password !== "string"
+		) {
+			res.status(401).json({
+				error: true,
+				message: "Incorrect email or password",
+			});
+			return;
+		}
+
+		// check if user exists
 		let userPasswordCheck = await req
 			.db("users")
 			.select("hash")
