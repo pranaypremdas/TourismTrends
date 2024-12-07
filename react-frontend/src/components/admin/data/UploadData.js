@@ -18,9 +18,12 @@ function UploadData({ lgas, trendTypes }) {
 		lga: "",
 		fileData: null,
 		colTypes: [],
+		startDate: null,
+		endDate: null,
 	});
 
 	const [state, setState] = useState({
+		message: null,
 		processing: false,
 		loading: false,
 		error: null,
@@ -28,6 +31,9 @@ function UploadData({ lgas, trendTypes }) {
 		trendTypes: trendTypes,
 		currentStep: 1,
 	});
+
+	console.log("formData", formData);
+	console.log("state", state);
 
 	if (state.error) {
 		return <Error error={state.error} />;
@@ -59,8 +65,7 @@ function UploadData({ lgas, trendTypes }) {
 			currentStep={state.currentStep}
 			setCurrentStep={(step) => setState((s) => ({ ...s, currentStep: step }))}
 			steps={steps}
-			useButtons={true}
-			buttonContainerClass="d-flex justify-content-end"
+			useButtons={false}
 		/>
 	);
 }

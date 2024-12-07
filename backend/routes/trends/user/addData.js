@@ -130,7 +130,18 @@ let router = express.Router();
  */
 router.post("/", async (req, res) => {
 	try {
+		// Check if the user is a business client
+		if (req.user.role === "Government") {
+			res.status(403).json({
+				error: true,
+				message: "Wrong client type",
+			});
+			return;
+		}
+
 		let data = req.body.data;
+
+		// Check if the data is present in the request body
 		if (!data || Array.isArray(data) || data.length === 0) {
 			res.status(400).json({
 				error: true,
@@ -138,6 +149,17 @@ router.post("/", async (req, res) => {
 			});
 			return;
 		}
+
+		// Check if the upload object is present in the request body
+		if (!req.body.upload || typeof req.body.upload !== "object") {
+			res.status(400).json({
+				error: true,
+				message: "Request body incomplete, upload is required",
+			});
+			return;
+		}
+
+		let upload = { ...req.body.upload, client_id: req.user.client_id };
 
 		// test the keys of the data object
 		// 1. All Keys Check
@@ -164,39 +186,44 @@ router.post("/", async (req, res) => {
 				].some((k) => Object.keys(d).includes(k))
 		);
 
-		// test the data values
-		// 1. date is a string
-		// 2. lga_id is a number
-		// 3. if the user is an Tourism Trends "owner", any lga_id is allowed
-		// 4. if the user is a Business, only their lga_id is allowed
-		// 5. average_historical_occupancy is a number
-		// 6. average_daily_rate is a number
-		// 7. average_length_of_stay is a number
-		// 8. average_booking_window is a number
-		let dataValid = data.every((d) =>
-			typeof d.date === "string" &&
-			typeof d.lga_id === "number" &&
-			req.user.client_type === "owner"
-				? true
-				: req.user.lga_ids.includes(d.lga_id) &&
-				  d.hasOwnProperty("average_historical_occupancy")
-				? typeof d.average_historical_occupancy === "number"
-				: true && d.hasOwnProperty("average_daily_rate")
-				? typeof d.average_daily_rate === "number"
-				: true && d.hasOwnProperty("average_length_of_stay")
-				? typeof d.average_length_of_stay === "number"
-				: true && d.hasOwnProperty("average_booking_window")
-				? typeof d.average_booking_window === "number"
-				: true
-		);
-
-		if (!keysValid || !dataValid) {
+		if (!keysValid) {
 			res.status(400).json({
 				error: true,
-				message: "Invalid data object",
+				message: "Invalid data keys",
 			});
 			return;
 		}
+
+		// Date is a string in form of "YYYY-MM-DD"
+		let dateValid = data.every((d) => {
+			let date = new Date(d.date);
+			return date instanceof Date && !isNaN(date);
+		});
+
+		if (!dateValid) {
+			res.status(400).json({
+				error: true,
+				message: "Invalid date format",
+			});
+			return;
+		}
+
+		// Convert string values to numbers if they exist
+		data = data.map((d) => {
+			if (d.average_historical_occupancy) {
+				d.average_historical_occupancy = Number(d.average_historical_occupancy);
+			}
+			if (d.average_daily_rate) {
+				d.average_daily_rate = Number(d.average_daily_rate);
+			}
+			if (d.average_length_of_stay) {
+				d.average_length_of_stay = Number(d.average_length_of_stay);
+			}
+			if (d.average_booking_window) {
+				d.average_booking_window = Number(d.average_booking_window);
+			}
+			return d;
+		});
 
 		// Check if the user-specific table exists
 		let tableName =

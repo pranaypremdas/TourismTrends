@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // Bootstrap Components
 import { Container, Card, Table, Button } from "react-bootstrap";
@@ -7,8 +7,6 @@ import { Container, Card, Table, Button } from "react-bootstrap";
 import postRequest from "../../../lib/postRequest";
 
 function UploadStep3({ state, setState, formData, setFormData }) {
-	console.log(formData);
-
 	const handleUpload = async () => {
 		const data = formData.fileData.map((row) => {
 			let newRow = {};
@@ -17,10 +15,17 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 			});
 			return newRow;
 		});
+		const upload = {
+			name: formData.name,
+			description: formData.description,
+			region: formData.region,
+			trendsTypes: formData.colTypes.map((col) => col.id),
+		};
 
 		setState((s) => ({ ...s, loading: true, error: null }));
 		let [response, error] = await postRequest("trends/user/add", {
 			data: data,
+			upload: upload,
 		});
 		if (error) {
 			setState((s) => ({ ...s, loading: false, error }));
@@ -48,7 +53,7 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 											return <td key={"header_date"}>Date</td>;
 										}
 
-										let foundType = state.trendTypes.public.find(
+										let foundType = state.trendTypes.find(
 											(tt) => tt.id === column.colName
 										);
 

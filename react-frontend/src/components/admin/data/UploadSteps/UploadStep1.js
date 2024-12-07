@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+
+// date functions
+import { parse, format } from "date-fns";
 
 // XLSX
 import { read, utils } from "xlsx";
 
 // Bootstrap Components
-import { Container, Card, Form } from "react-bootstrap";
+import { Container, Card, Form, Button } from "react-bootstrap";
 
 /**
  * Component for the first step of the upload process.
@@ -20,12 +23,13 @@ import { Container, Card, Form } from "react-bootstrap";
  * @returns {JSX.Element} The UploadStep1 component.
  */
 function UploadStep1({ state, setState, formData, setFormData, user }) {
-	let processingPercentage = 0;
+	const fileInputRef = useRef(null); // Create a ref for the file input
 
 	const handleFileUpload = (event) => {
 		setState((s) => ({ ...s, processing: true }));
-		setFormData((s) => ({ ...s, fileData: null }));
 		const file = event.target.files[0];
+
+		// prepare to read the file
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			try {
@@ -33,24 +37,28 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 				const workbook = read(data, { type: "array" });
 				const jsonData = utils.sheet_to_json(
 					workbook.Sheets[workbook.SheetNames[0]],
-					{ raw: false, dateNF: "yyyy-mm-dd" } // Add dateNF option to format dates
+					{
+						raw: false,
+						dateNF: 'yyyy"-"mm"-"dd',
+					}
 				);
 
-				// Ensure date format remains "yyyy-mm-dd"
-				let jsonDataWithDate = jsonData.map((row, index) => {
+				let jsonTypes = Object.keys(jsonData[0]);
+
+				// date from m/d/yy to yyyy-mm-dd
+				let jsonDataDateFix = jsonData.map((row) => {
 					let newRow = { ...row };
-					processingPercentage = Math.round(
-						((index + 1) / Object.keys(jsonData).length) * 100
-					);
-					Object.keys(row).forEach((key) => {
-						if (key === "date") {
-							newRow[key] = new Date(row[key]).toISOString().split("T")[0];
-						}
-					});
+
+					if (row.hasOwnProperty("date")) {
+						// Parse the date in m/d/yy format and format it to yyyy-MM-dd
+						newRow.date = format(
+							parse(row.date, "M/d/yy", new Date()),
+							"yyyy-MM-dd"
+						);
+					}
+
 					return newRow;
 				});
-
-				let jsonTypes = Object.keys(jsonDataWithDate[0]);
 
 				let colTypes = [];
 				jsonTypes.forEach((type) => {
@@ -60,7 +68,7 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 							colName: type,
 						});
 					} else {
-						let foundTrend = state.trendTypes.public.find((t) => t.id === type);
+						let foundTrend = state.trendTypes.find((t) => t.id === type);
 						colTypes.push({
 							id: type,
 							colName: foundTrend ? foundTrend.id : "ignore",
@@ -70,7 +78,7 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 
 				setFormData((s) => ({
 					...s,
-					fileData: jsonDataWithDate,
+					fileData: jsonDataDateFix,
 					colTypes: colTypes,
 				}));
 			} catch (error) {
@@ -79,8 +87,29 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 				setState((s) => ({ ...s, loading: false, processing: false }));
 			}
 		};
+		// read the file
 		reader.readAsArrayBuffer(file);
 	};
+
+	// check that all dates are different and of the format YYYY-MM-DD
+	useEffect(() => {
+		if (formData.fileData) {
+			const dateArray = formData.fileData.map((d) => d.date);
+			const uniqueDates = new Set(dateArray);
+
+			// check if all dates are unique
+			if (uniqueDates.size !== dateArray.length) {
+				setState((s) => ({
+					...s,
+					message: "Duplicate dates found in the file, please check your data.",
+				}));
+			}
+
+			let maxDate = dateArray.reduce((a, b) => (a > b ? a : b));
+			let minDate = dateArray.reduce((a, b) => (a < b ? a : b));
+			setFormData((s) => ({ ...s, startDate: minDate, endDate: maxDate }));
+		}
+	}, [formData.fileData]);
 
 	return (
 		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
@@ -127,24 +156,59 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 						<Form.Control
 							type="file"
 							accept=".csv"
+							ref={fileInputRef}
 							onChange={handleFileUpload}
 							disabled={state.loading}
 							required
 						/>
-						<Form.Text className="text-muted">
-							Your CSV file should contain a header row with the following
-							columns:
-						</Form.Text>
-						<Form.Text>
-							<ul>
-								<li>"date" (yyyy-mm-dd)</li>
-								<li>Any number of valid data type columns</li>
-							</ul>
-						</Form.Text>
-						{state.processing && (
-							<Form.Text>Processing file... %{processingPercentage}</Form.Text>
+						{Boolean(formData.fileData) || (
+							<>
+								<Form.Text className="text-muted">
+									Your CSV file should contain a header row with the following
+									columns:
+								</Form.Text>
+								<Form.Text>
+									<ul>
+										<li>date (YYYY-MM-DD)</li>
+										<li>Any number of valid data type columns</li>
+									</ul>
+								</Form.Text>
+							</>
+						)}
+
+						{state.processing && <Form.Text>Processing file...</Form.Text>}
+						{state.message && (
+							<Form.Text className="warning">{state.message}</Form.Text>
 						)}
 					</Form.Group>
+
+					<div className="d-flex justify-content-between">
+						<Button
+							variant="warning"
+							onClick={() => {
+								setFormData({
+									name: "",
+									lga: "",
+									fileData: null,
+									colTypes: [],
+								});
+								setState({ ...state, message: "", processing: false });
+								if (fileInputRef.current) {
+									fileInputRef.current.value = "";
+								}
+							}}
+						>
+							Reset
+						</Button>
+						{(formData.fileData && formData.name && formData.lga !== "" && (
+							<Button
+								onClick={() => setState((s) => ({ ...s, currentStep: 2 }))}
+								disabled={state.processing || state.loading || state.error}
+							>
+								Review
+							</Button>
+						)) || <div></div>}
+					</div>
 				</Card.Body>
 			</Card>
 		</Container>

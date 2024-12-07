@@ -11,7 +11,7 @@ import Error from "../../Error/Error";
 import getRequest from "../../lib/getRequest";
 import { UserContext } from "../../../contexts/UserContext";
 import LocalGovernmentAreas from "./LocalGovernmentAreas";
-import DataTypes from "./DataTypes";
+import TrendTypes from "./TrendTypes";
 import UploadData from "./UploadData";
 
 /**
@@ -32,7 +32,7 @@ import UploadData from "./UploadData";
 const ManageData = () => {
 	const { user } = useContext(UserContext);
 	const [lgas, setLgas] = useState([]);
-	const [trendTypes, setTrendTypes] = useState({ public: [], user: [] });
+	const [trendTypes, setTrendTypes] = useState([]);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 
@@ -42,7 +42,7 @@ const ManageData = () => {
 			setError(null);
 
 			const [lgaList, lgaError] = await getRequest("lga/list", false);
-			const [trendTypes, trendTypesError] = await getRequest("trends/types");
+			const [trendTypes, trendTypesError] = await getRequest("trend/types");
 
 			if (lgaError) {
 				setError(lgaError);
@@ -79,10 +79,13 @@ const ManageData = () => {
 							</div>
 						</Tab>
 
-						<Tab eventKey="dataType" title="Valid Data Types">
+						<Tab eventKey="dataType" title="Valid Trend Types">
 							<div className="mt-3">
-								<h3>Valid Data Types</h3>
-								<DataTypes trendTypes={trendTypes} />
+								<h3>Valid Trend Types</h3>
+								<TrendTypes
+									trendTypes={trendTypes}
+									setTrendTypes={setTrendTypes}
+								/>
 							</div>
 						</Tab>
 

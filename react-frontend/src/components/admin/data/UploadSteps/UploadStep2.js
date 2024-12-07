@@ -1,9 +1,42 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // Bootstrap Components
-import { Container, Card, Form, Table } from "react-bootstrap";
+import { Container, Card, Form, Table, Button } from "react-bootstrap";
 
 function UploadStep1({ state, setState, formData, setFormData }) {
+	const handleSelectChange = (e, index) => {
+		const newColTypes = [...formData.colTypes];
+		newColTypes[index] = { ...newColTypes[index], colName: e.target.value };
+		setFormData((s) => ({
+			...s,
+			colTypes: newColTypes,
+		}));
+	};
+
+	useEffect(() => {
+		if (formData.colTypes && formData.colTypes.length > 0) {
+			// check if date is assigned
+			const dateCol = formData.colTypes.find((col) => col.colName === "date");
+			// check if a trend type is assigned
+			const trendCol = formData.colTypes.find(
+				(col) => col.colName !== "ignore" && col.colName !== "date"
+			);
+			if (!dateCol || !trendCol) {
+				setState((s) => ({
+					...s,
+					message: "Please assign a date and a trend type to columns",
+					processing: true,
+				}));
+			} else {
+				setState((s) => ({
+					...s,
+					message: null,
+					processing: false,
+				}));
+			}
+		}
+	}, [formData.colTypes]);
+
 	return (
 		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
 			{formData.fileData && (
@@ -26,21 +59,7 @@ function UploadStep1({ state, setState, formData, setFormData }) {
 										<td>
 											<Form.Select
 												value={column.colName}
-												onChange={(e) => {
-													const newColTypes = formData.colTypes.map((col) => {
-														if (col.id === column.id) {
-															return {
-																...col,
-																colName: e.target.value,
-															};
-														}
-														return col;
-													});
-													setFormData((s) => ({
-														...s,
-														colTypes: newColTypes,
-													}));
-												}}
+												onChange={(e) => handleSelectChange(e, index)}
 												disabled={state.loading}
 												required
 											>
@@ -50,7 +69,7 @@ function UploadStep1({ state, setState, formData, setFormData }) {
 												<option key={"date"} value={"date"}>
 													Date
 												</option>
-												{state.trendTypes.public.map((type) => (
+												{state.trendTypes.map((type) => (
 													<option key={type.id} value={type.id}>
 														{type.name}
 													</option>
@@ -61,6 +80,34 @@ function UploadStep1({ state, setState, formData, setFormData }) {
 								))}
 							</tbody>
 						</Table>
+						{state.message && (
+							<Form.Text className="warning">{state.message}</Form.Text>
+						)}
+
+						<div className="d-flex justify-content-between">
+							<Button
+								variant="secondary"
+								onClick={() =>
+									setState((s) => ({
+										...s,
+										currentStep: 1,
+										message: null,
+										processing: false,
+										error: null,
+									}))
+								}
+							>
+								Back
+							</Button>
+							{(formData.fileData && (
+								<Button
+									onClick={() => setState((s) => ({ ...s, currentStep: 3 }))}
+									disabled={state.processing || state.message}
+								>
+									Review
+								</Button>
+							)) || <div></div>}
+						</div>
 					</Card.Body>
 				</Card>
 			)}
