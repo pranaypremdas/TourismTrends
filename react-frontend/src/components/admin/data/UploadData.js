@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 
 // User Contexts
 import { UserContext } from "../../../contexts/UserContext";
@@ -16,10 +16,11 @@ function UploadData({ lgas, trendTypes }) {
 	const [formData, setFormData] = useState({
 		name: "",
 		lga: "",
-		fileData: null,
-		colTypes: [],
+		idTypes: { date: "", trendTypes: [], headers: [] },
 		startDate: null,
 		endDate: null,
+		fileData: null,
+		fileName: null,
 	});
 
 	const [state, setState] = useState({
@@ -32,8 +33,10 @@ function UploadData({ lgas, trendTypes }) {
 		currentStep: 1,
 	});
 
+	const fileInputRef = useRef(); // Create a ref for the file input
+
 	console.log("formData", formData);
-	console.log("state", state);
+	// console.log("state", state);
 
 	if (state.error) {
 		return <Error error={state.error} />;
@@ -44,7 +47,7 @@ function UploadData({ lgas, trendTypes }) {
 			id: 1,
 			name: "Step 1: Upload",
 			Component: UploadStep1,
-			props: { formData, setFormData, state, setState, user },
+			props: { formData, setFormData, state, setState, user, fileInputRef },
 		},
 		{
 			id: 2,

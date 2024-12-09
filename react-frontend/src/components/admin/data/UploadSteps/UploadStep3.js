@@ -7,25 +7,19 @@ import { Container, Card, Table, Button } from "react-bootstrap";
 import postRequest from "../../../lib/postRequest";
 
 function UploadStep3({ state, setState, formData, setFormData }) {
+	// send the data to the server
 	const handleUpload = async () => {
 		const data = formData.fileData.map((row) => {
 			let newRow = {};
-			formData.colTypes.forEach((col) => {
+			formData.idTypes.trendTypes.forEach((col) => {
 				newRow[col.id] = row[col.col];
 			});
 			return newRow;
 		});
-		const upload = {
-			name: formData.name,
-			description: formData.description,
-			region: formData.region,
-			trendsTypes: formData.colTypes.map((col) => col.id),
-		};
 
 		setState((s) => ({ ...s, loading: true, error: null }));
 		let [response, error] = await postRequest("trends/user/add", {
-			data: data,
-			upload: upload,
+			upload: formData,
 		});
 		if (error) {
 			setState((s) => ({ ...s, loading: false, error }));
@@ -48,19 +42,11 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 							<thead>
 								<tr>
 									<td key={"header_row"}>Row</td>
-									{formData.colTypes.map((column, index) => {
-										if (column.colName === "date") {
-											return <td key={"header_date"}>Date</td>;
-										}
-
-										let foundType = state.trendTypes.find(
-											(tt) => tt.id === column.colName
-										);
-
+									<td key={"header_date"}>Date</td>
+									{formData.idTypes.trendTypes.map((column, index) => {
 										return (
-											column.colName !== "ignore" &&
-											foundType && (
-												<td key={"header_" + foundType.id}>{foundType.name}</td>
+											column.colName !== "ignore" && (
+												<td key={"header_" + column.id}>{column.name}</td>
 											)
 										);
 									})}
@@ -70,17 +56,32 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 								{formData.fileData.slice(0, 10).map((row, index) => (
 									<tr key={index}>
 										<td key={"row_" + index}>{index + 1}</td>
-										{formData.colTypes.map(
+										<td key={"row_date_" + index}>{row.date}</td>
+										{formData.idTypes.trendTypes.map(
 											(column, index) =>
 												column.colName !== "ignore" && (
-													<td key={"row_" + index}>{row[column.id]}</td>
+													<td key={"row_" + index}>{row[column.colName]}</td>
 												)
 										)}
 									</tr>
 								))}
 							</tbody>
 						</Table>
-						<div className="d-flex justify-content-end">
+						<div className="d-flex justify-content-between">
+							<Button
+								variant="secondary"
+								onClick={() =>
+									setState((s) => ({
+										...s,
+										currentStep: 2,
+										message: null,
+										processing: false,
+										error: null,
+									}))
+								}
+							>
+								Back
+							</Button>
 							<Button onClick={() => handleUpload()}>Upload</Button>
 						</div>
 					</Card.Body>

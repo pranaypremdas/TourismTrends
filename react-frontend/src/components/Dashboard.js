@@ -136,6 +136,8 @@ const Dashboard = () => {
     fetchData(activeTab === "yearOnYear");
   }, [activeTab, trendType]);
 
+
+
   if (error) {
     return <Error message={error} />;
   }

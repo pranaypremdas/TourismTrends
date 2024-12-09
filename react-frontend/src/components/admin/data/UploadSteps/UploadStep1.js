@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 
 // date functions
 import { parse, format } from "date-fns";
@@ -19,14 +19,20 @@ import { Container, Card, Form, Button } from "react-bootstrap";
  * @param {Object} props.formData - The form data state.
  * @param {Function} props.setFormData - Function to update the form data state.
  * @param {Object} props.user - The user object containing user-specific data.
+ * @param {Object} props.fileInputRef - The reference to the file input element.
  *
  * @returns {JSX.Element} The UploadStep1 component.
  */
-function UploadStep1({ state, setState, formData, setFormData, user }) {
-	const fileInputRef = useRef(null); // Create a ref for the file input
-
+function UploadStep1({
+	state,
+	setState,
+	formData,
+	setFormData,
+	user,
+	fileInputRef,
+}) {
 	const handleFileUpload = (event) => {
-		setState((s) => ({ ...s, processing: true }));
+		setState((s) => ({ ...s, processing: true, message: null, error: null }));
 		const file = event.target.files[0];
 
 		// prepare to read the file
@@ -35,7 +41,7 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 			try {
 				const data = new Uint8Array(e.target.result);
 				const workbook = read(data, { type: "array" });
-				const jsonData = utils.sheet_to_json(
+				const workbookData = utils.sheet_to_json(
 					workbook.Sheets[workbook.SheetNames[0]],
 					{
 						raw: false,
@@ -43,10 +49,10 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 					}
 				);
 
-				let jsonTypes = Object.keys(jsonData[0]);
+				let headers = Object.keys(workbookData[0]);
 
 				// date from m/d/yy to yyyy-mm-dd
-				let jsonDataDateFix = jsonData.map((row) => {
+				let workbookDataDateFix = workbookData.map((row) => {
 					let newRow = { ...row };
 
 					if (row.hasOwnProperty("date")) {
@@ -60,26 +66,22 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 					return newRow;
 				});
 
-				let colTypes = [];
-				jsonTypes.forEach((type) => {
+				let idTypes = {
+					date: "",
+					trendTypes: state.trendTypes.map((tt) => ({ ...tt, colName: "" })),
+					headers: headers,
+				};
+				headers.forEach((type) => {
 					if (type === "date") {
-						colTypes.push({
-							id: "date",
-							colName: type,
-						});
-					} else {
-						let foundTrend = state.trendTypes.find((t) => t.id === type);
-						colTypes.push({
-							id: type,
-							colName: foundTrend ? foundTrend.id : "ignore",
-						});
+						idTypes.date = type;
 					}
 				});
 
 				setFormData((s) => ({
 					...s,
-					fileData: jsonDataDateFix,
-					colTypes: colTypes,
+					fileName: file.name,
+					fileData: workbookDataDateFix,
+					idTypes: idTypes,
 				}));
 			} catch (error) {
 				setState((s) => ({ ...s, error: error }));
@@ -111,8 +113,12 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 		}
 	}, [formData.fileData]);
 
+	// Render the component
 	return (
-		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
+		<Container
+			className="d-flex justify-content-center align-items-top mt-4 mb-4"
+			style={{ minWidth: "600px" }} // Add minimum width
+		>
 			<Card className="p-4">
 				<Card.Title className="text-center">
 					<h5>Upload CSV</h5>
@@ -153,16 +159,18 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 					</Form.Group>
 					<Form.Group className="mb-3" controlId="formFile">
 						<Form.Label>Upload Data (CSV)</Form.Label>
-						<Form.Control
-							type="file"
-							accept=".csv"
-							ref={fileInputRef}
-							onChange={handleFileUpload}
-							disabled={state.loading}
-							required
-						/>
 						{Boolean(formData.fileData) || (
 							<>
+								<Form.Control
+									type="file"
+									accept=".csv"
+									ref={fileInputRef}
+									onChange={handleFileUpload}
+									disabled={state.loading}
+									required
+									style={{ width: "100%" }} // Ensure the file input has the same width
+								/>
+
 								<Form.Text className="text-muted">
 									Your CSV file should contain a header row with the following
 									columns:
@@ -171,6 +179,27 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 									<ul>
 										<li>date (YYYY-MM-DD)</li>
 										<li>Any number of valid data type columns</li>
+									</ul>
+								</Form.Text>
+							</>
+						)}
+						{Boolean(formData.fileData) && (
+							<>
+								<Form.Control
+									type="text"
+									value={formData.fileName}
+									disabled
+									required
+									style={{ width: "100%" }} // Ensure the text input has the same width
+								/>
+
+								<Form.Text className="text-muted">
+									{formData.fileData.length} rows of data found in the file.
+								</Form.Text>
+								<Form.Text className="text-muted">
+									<ul>
+										<li>From: {formData.startDate}</li>
+										<li>To: {formData.endDate}</li>
 									</ul>
 								</Form.Text>
 							</>
@@ -202,10 +231,17 @@ function UploadStep1({ state, setState, formData, setFormData, user }) {
 						</Button>
 						{(formData.fileData && formData.name && formData.lga !== "" && (
 							<Button
-								onClick={() => setState((s) => ({ ...s, currentStep: 2 }))}
-								disabled={state.processing || state.loading || state.error}
+								onClick={() =>
+									setState((s) => ({ ...s, currentStep: 2, stepBack: false }))
+								}
+								disabled={
+									state.processing ||
+									state.loading ||
+									state.error ||
+									state.message
+								}
 							>
-								Review
+								Identify Data
 							</Button>
 						)) || <div></div>}
 					</div>

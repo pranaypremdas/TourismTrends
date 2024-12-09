@@ -139,17 +139,6 @@ router.post("/", async (req, res) => {
 			return;
 		}
 
-		let data = req.body.data;
-
-		// Check if the data is present in the request body
-		if (!data || Array.isArray(data) || data.length === 0) {
-			res.status(400).json({
-				error: true,
-				message: "Request body incomplete, data is required",
-			});
-			return;
-		}
-
 		// Check if the upload object is present in the request body
 		if (!req.body.upload || typeof req.body.upload !== "object") {
 			res.status(400).json({
@@ -161,68 +150,12 @@ router.post("/", async (req, res) => {
 
 		let upload = { ...req.body.upload, client_id: req.user.client_id };
 
-		// test the keys of the data object
-		// 1. All Keys Check
-		// 2. Date and lga_id Check
-		// 3. At least one of the four data keys
-		let keysValid = data.every(
-			(d) =>
-				Object.keys(d).every((k) =>
-					[
-						"date",
-						"lga_id",
-						"average_historical_occupany",
-						"average_daily_rate",
-						"average_length_of_stay",
-						"average_booking_window",
-					].includes(k)
-				) &&
-				["date", "lga_id"].every((k) => Object.keys(d).includes(k)) &&
-				[
-					"average_historical_occupancy",
-					"average_daily_rate",
-					"average_length_of_stay",
-					"average_booking_window",
-				].some((k) => Object.keys(d).includes(k))
-		);
-
-		if (!keysValid) {
-			res.status(400).json({
-				error: true,
-				message: "Invalid data keys",
+		let data = upload.fileData.map((row) => {
+			let newRow = {};
+			upload.idTypes.trendTypes.forEach((col) => {
+				newRow[col.id] = row[col.col];
 			});
-			return;
-		}
-
-		// Date is a string in form of "YYYY-MM-DD"
-		let dateValid = data.every((d) => {
-			let date = new Date(d.date);
-			return date instanceof Date && !isNaN(date);
-		});
-
-		if (!dateValid) {
-			res.status(400).json({
-				error: true,
-				message: "Invalid date format",
-			});
-			return;
-		}
-
-		// Convert string values to numbers if they exist
-		data = data.map((d) => {
-			if (d.average_historical_occupancy) {
-				d.average_historical_occupancy = Number(d.average_historical_occupancy);
-			}
-			if (d.average_daily_rate) {
-				d.average_daily_rate = Number(d.average_daily_rate);
-			}
-			if (d.average_length_of_stay) {
-				d.average_length_of_stay = Number(d.average_length_of_stay);
-			}
-			if (d.average_booking_window) {
-				d.average_booking_window = Number(d.average_booking_window);
-			}
-			return d;
+			return newRow;
 		});
 
 		// Check if the user-specific table exists
