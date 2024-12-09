@@ -16,6 +16,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import postRequest from "./lib/postRequest";
+import getRequest from "./lib/getRequest";
 import Error from "./Error/Error";
 
 ChartJS.register(
@@ -53,6 +54,7 @@ const Dashboard = () => {
   const [endYear, setEndYear] = useState("2024");
   const [trendType, setTrendType] = useState("ave_historical_occupancy");
   const [selectedRegion, setSelectedRegion] = useState("");
+  const [lgas, setLgas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("customDates");
@@ -91,8 +93,6 @@ const Dashboard = () => {
             type: [trendType],
           };
 
-      console.log(requestBody);
-
       const [trendData, trendError] = await postRequest("trends", requestBody);
 
       if (trendError) {
@@ -112,9 +112,11 @@ const Dashboard = () => {
           mappedData.forEach((item) => {
             const [year, month, day] = item.date.split("-");
             const key = `${month}-${day}`; // Align by month and day
-            if (!groupedByYear[year]) groupedByYear[year] = {};
-            if (!groupedByYear[year][key]) groupedByYear[year][key] = 0;
-            groupedByYear[year][key] += item[trendType];
+            if (month !== "2" && day !== "29") {
+              if (!groupedByYear[year]) groupedByYear[year] = {};
+              if (!groupedByYear[year][key]) groupedByYear[year][key] = 0;
+              groupedByYear[year][key] += item[trendType];
+            }
           });
 
           const datasets = Object.entries(groupedByYear).map(
@@ -170,6 +172,18 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    async function fetchLgas() {
+      const [lgaList, lgaError] = await getRequest("lga/list", false);
+      if (lgaError) {
+        setError(lgaError);
+      } else {
+        setLgas(lgaList.results);
+      }
+    }
+    fetchLgas();
+  }, []);
 
   useEffect(() => {
     fetchData(activeTab === "yearOnYear");
@@ -267,11 +281,14 @@ const Dashboard = () => {
                         >
                           {user.client.lgaIds &&
                           user.client.lgaIds.length > 0 ? (
-                            user.client.lgaIds.map((lgaId) => (
-                              <option key={lgaId} value={lgaId}>
-                                {lgaId}
-                              </option>
-                            ))
+                            user.client.lgaIds.map((id) => {
+                              const lga = lgas.find((lga) => lga.id === id);
+                              return (
+                                <option key={id} value={id}>
+                                  {lga ? lga.lga_name : "Unknown"}
+                                </option>
+                              );
+                            })
                           ) : (
                             <option disabled>No regions available</option>
                           )}
