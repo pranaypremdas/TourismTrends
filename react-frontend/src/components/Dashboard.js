@@ -16,6 +16,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import postRequest from "./lib/postRequest";
+import getRequest from "./lib/getRequest";
 import Error from "./Error/Error";
 
 ChartJS.register(
@@ -52,6 +53,8 @@ const Dashboard = () => {
   const [startYear, setStartYear] = useState("2023");
   const [endYear, setEndYear] = useState("2024");
   const [trendType, setTrendType] = useState("ave_historical_occupancy");
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [lgas, setLgas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("customDates");
@@ -73,11 +76,14 @@ const Dashboard = () => {
   const fetchData = async (isYearOnYear = false) => {
     setLoading(true);
     try {
+      const regionToUse = selectedRegion || user.client.lgaIds[0];
+
       const yearOnYearStartDate = `${startYear}-01-01`;
       const yearOnYearEndDate = `${endYear}-12-31`;
+
       const requestBody = isYearOnYear
         ? {
-            region: user.client.lgaIds,
+            region: [regionToUse],
             dateRange: [yearOnYearStartDate, yearOnYearEndDate],
             type: [trendType],
           }
@@ -100,27 +106,62 @@ const Dashboard = () => {
 
         setRowData(mappedData);
 
-        const groupedData = mappedData.reduce((acc, item) => {
-          if (!acc[item.lga_name]) {
-            acc[item.lga_name] = [];
-          }
-          acc[item.lga_name].push({
-            x: item.date,
-            y: item[trendType],
+        if (isYearOnYear) {
+          // Process data for year-on-year visualization
+          const groupedByYear = {};
+          mappedData.forEach((item) => {
+            const [year, month, day] = item.date.split("-");
+            const key = `${month}-${day}`; // Align by month and day
+            if (month !== "2" && day !== "29") {
+              if (!groupedByYear[year]) groupedByYear[year] = {};
+              if (!groupedByYear[year][key]) groupedByYear[year][key] = 0;
+              groupedByYear[year][key] += item[trendType];
+            }
           });
-          return acc;
-        }, {});
 
-        const datasets = Object.keys(groupedData).map((lga_name) => ({
-          label: lga_name,
-          data: groupedData[lga_name],
-          fill: false,
-          borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-        }));
+          const datasets = Object.entries(groupedByYear).map(
+            ([year, data]) => ({
+              label: `Year ${year}`,
+              data: Object.entries(data).map(([date, value]) => ({
+                x: date,
+                y: value,
+              })),
+              fill: false,
+              borderColor: `#${Math.floor(Math.random() * 16777215).toString(
+                16
+              )}`,
+            })
+          );
 
-        setChartData({
-          datasets,
-        });
+          setChartData({
+            datasets,
+          });
+        } else {
+          // Original chart processing for custom date range
+          const groupedData = mappedData.reduce((acc, item) => {
+            if (!acc[item.lga_name]) {
+              acc[item.lga_name] = [];
+            }
+            acc[item.lga_name].push({
+              x: item.date,
+              y: item[trendType],
+            });
+            return acc;
+          }, {});
+
+          const datasets = Object.keys(groupedData).map((lga_name) => ({
+            label: lga_name,
+            data: groupedData[lga_name],
+            fill: false,
+            borderColor: `#${Math.floor(Math.random() * 16777215).toString(
+              16
+            )}`,
+          }));
+
+          setChartData({
+            datasets,
+          });
+        }
 
         const calculatedMetadata = calculateMetadata(mappedData, trendType);
         setMetadata(calculatedMetadata);
@@ -133,8 +174,21 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    async function fetchLgas() {
+      const [lgaList, lgaError] = await getRequest("lga/list", false);
+      if (lgaError) {
+        setError(lgaError);
+      } else {
+        setLgas(lgaList.results);
+      }
+    }
+    fetchLgas();
+  }, []);
+
+  useEffect(() => {
     fetchData(activeTab === "yearOnYear");
-  }, [activeTab, trendType]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, trendType, selectedRegion]);
 
   if (error) {
     return <Error message={error} />;
@@ -218,39 +272,28 @@ const Dashboard = () => {
                 <Form>
                   <Row>
                     <Col>
-                      <Form.Group controlId="startYear">
-                        <Form.Label>Start Year</Form.Label>
+                      <Form.Group controlId="regionDropdown">
+                        <Form.Label>Select Region</Form.Label>
                         <Form.Control
                           as="select"
-                          value={startYear}
-                          onChange={(e) => setStartYear(e.target.value)}
+                          value={selectedRegion}
+                          onChange={(e) => setSelectedRegion(e.target.value)}
                         >
-                          <option value="2022">2022</option>
-                          <option value="2023">2023</option>
+                          {user.client.lgaIds &&
+                          user.client.lgaIds.length > 0 ? (
+                            user.client.lgaIds.map((id) => {
+                              const lga = lgas.find((lga) => lga.id === id);
+                              return (
+                                <option key={id} value={id}>
+                                  {lga ? lga.lga_name : "Unknown"}
+                                </option>
+                              );
+                            })
+                          ) : (
+                            <option disabled>No regions available</option>
+                          )}
                         </Form.Control>
                       </Form.Group>
-                    </Col>
-                    <Col>
-                      <Form.Group controlId="endYear">
-                        <Form.Label>End Year</Form.Label>
-                        <Form.Control
-                          as="select"
-                          value={endYear}
-                          onChange={(e) => setEndYear(e.target.value)}
-                        >
-                          <option value="2023">2023</option>
-                          <option value="2024">2024</option>
-                        </Form.Control>
-                      </Form.Group>
-                    </Col>
-                    <Col className="d-flex align-items-end">
-                      <Button
-                        variant="primary"
-                        onClick={() => fetchData(true)}
-                        disabled={loading}
-                      >
-                        {loading ? "Loading..." : "Search"}
-                      </Button>
                     </Col>
                   </Row>
                 </Form>
@@ -264,7 +307,7 @@ const Dashboard = () => {
         activeKey={dataViewTab}
         onSelect={(k) => setDataViewTab(k)}
       >
-        <Nav variant="tabs" className="mb-4">
+        <Nav variant="tabs" className="mb-4 mt-4">
           <Nav.Item>
             <Nav.Link eventKey="graph">Graph</Nav.Link>
           </Nav.Item>
@@ -274,45 +317,39 @@ const Dashboard = () => {
         </Nav>
         <Tab.Content>
           <Tab.Pane eventKey="graph">
-            <Row>
-              <Col>
-                {chartData && (
-                  <Line
-                    options={{
-                      responsive: true,
-                      plugins: {
-                        title: {
-                          display: true,
-                          text: trendType,
-                        },
-                      },
-                    }}
-                    data={chartData}
-                  />
-                )}
-              </Col>
-            </Row>
+            {chartData && (
+              <Line
+                data={chartData}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: "top",
+                    },
+                  },
+                }}
+              />
+            )}
           </Tab.Pane>
           <Tab.Pane eventKey="table">
-            <Row>
-              <Col>
-                <div className="ag-theme-alpine" style={{ height: "500px" }}>
-                  <AgGridReact
-                    rowData={rowData}
-                    columnDefs={columnDefs}
-                    defaultColDef={defaultColDef}
-                    pagination
-                  />
-                </div>
-              </Col>
-            </Row>
+            <div
+              className="ag-theme-alpine"
+              style={{ height: 500, width: "100%" }}
+            >
+              <AgGridReact
+                rowData={rowData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                pagination={true}
+              />
+            </div>
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
 
       {metadata && (
         <div className="mt-4">
-          <h5>Summary Statistics:</h5>
+          <h5>Metadata:</h5>
           <div className="card">
             <div className="card-body">
               <div className="row text-center">
