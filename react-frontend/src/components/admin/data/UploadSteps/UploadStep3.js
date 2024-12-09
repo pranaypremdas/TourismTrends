@@ -9,14 +9,6 @@ import postRequest from "../../../lib/postRequest";
 function UploadStep3({ state, setState, formData, setFormData }) {
 	// send the data to the server
 	const handleUpload = async () => {
-		const data = formData.fileData.map((row) => {
-			let newRow = {};
-			formData.idTypes.trendTypes.forEach((col) => {
-				newRow[col.id] = row[col.col];
-			});
-			return newRow;
-		});
-
 		setState((s) => ({ ...s, loading: true, error: null }));
 		let [response, error] = await postRequest("trends/user/add", {
 			upload: formData,

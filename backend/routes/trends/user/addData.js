@@ -150,13 +150,25 @@ router.post("/", async (req, res) => {
 
 		let upload = { ...req.body.upload, client_id: req.user.client_id };
 
-		let data = upload.fileData.map((row) => {
-			let newRow = {};
-			upload.idTypes.trendTypes.forEach((col) => {
-				newRow[col.id] = row[col.col];
+		let dataByType = [];
+
+		upload.fileData.forEach((row) => {
+			let newRow = {
+				date: row[upload.idTypes.date],
+				lga_id: Number(upload.lga),
+			};
+			upload.idTypes.trendTypes.forEach((column) => {
+				if (column.colName !== "ignore") {
+					dataByType.push({
+						...newRow,
+						tt_id: column.id,
+						value: Number(row[column.colName]),
+					});
+				}
 			});
-			return newRow;
 		});
+
+		console.log(dataByType);
 
 		// Check if the user-specific table exists
 		let tableName =
@@ -165,29 +177,27 @@ router.post("/", async (req, res) => {
 				: `user_trends_${req.user.client_id}`;
 		let tableExists = await req.db.schema.hasTable(tableName);
 
-		if (!tableExists) {
-			// create the table
-			await req.db.schema.createTable(tableName, (table) => {
-				table.increments("id").primary();
-				table.date("date").notNullable();
-				table.integer("lga_id").notNullable();
-				table.float("average_historical_occupancy").notNullable();
-				table.float("average_daily_rate").notNullable();
-				table.float("average_length_of_stay").notNullable();
-				table.float("average_booking_window").notNullable();
-			});
-		}
+		// if (!tableExists) {
+		// 	// create the table
+		// 	await req.db.schema.createTable(tableName, (table) => {
+		// 		table.increments("id").primary();
+		// 		table.date("date").notNullable();
+		// 		table.integer("lga_id").notNullable();
+		// 		table.float("average_historical_occupancy").notNullable();
+		// 		table.float("average_daily_rate").notNullable();
+		// 		table.float("average_length_of_stay").notNullable();
+		// 		table.float("average_booking_window").notNullable();
+		// 	});
+		// }
 
 		// add data to the table
-		let response = await req.db(tableName).insert(data);
+		// let response = await req.db(tableName).insert(data);
 
 		res.status(200).json({
 			error: false,
 			message: "Success",
-			query: {
-				toDelete,
-			},
-			addedCount: response,
+			query: {},
+			// addedCount: response,
 			addedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {
