@@ -190,6 +190,8 @@ const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, trendType, selectedRegion]);
 
+
+
   if (error) {
     return <Error message={error} />;
   }

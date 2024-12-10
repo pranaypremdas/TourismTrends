@@ -76,9 +76,15 @@ const CreateUser = ({ clients }) => {
 								</Form.Select>
 							</Form.Group>
 						)}
-						<Button type="submit" className="w-100" disabled={loading}>
-							{loading ? "Registering..." : "Register"}
-						</Button>
+
+						<div className="d-flex justify-content-between mt-2">
+							<Button variant="warning" type="reset">
+								Reset
+							</Button>
+							<Button variant="primary" type="submit" disabled={loading}>
+								{loading ? "Registering..." : "Register"}
+							</Button>
+						</div>
 					</Form>
 					{error && (
 						<Alert variant="danger" className="mt-3">

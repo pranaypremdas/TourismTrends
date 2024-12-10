@@ -7,20 +7,23 @@ let router = express.Router();
  * @param {Object} req - The request object from the client.
  * @param {Object} req.db - The database connection object.
  * @param {Object} req.user - The user object containing user information.
- * @param {Object} req.body - The body of the request containing the request parameters.
- * @param {Array<string>} req.body.type - The type of data to fetch (optional).
- * @param {Array<string>} req.body.dateRange - The date range to filter the data (optional).
- * @param {Array<string>} req.query.region - The region to filter the data (optional).
  * @param {Object} res - The response object sent to the client.
  * @returns {Promise<Object>} The response object containing the query results.
  */
 
 /**
  * @swagger
- * /trends/types:
+ * tags:
+ *   name: Trend Types
+ *   description: The Trend Types endpoint fetches tourism trend types from the database.
+ */
+
+/**
+ * @swagger
+ * /trend/types:
  *   get:
  *     summary: Fetch tourism trend types
- *     tags: [Trend Data]
+ *     tags: [Trend Types]
  *     description: Fetches tourism trend types from the database
  *     responses:
  *       200:
@@ -78,24 +81,15 @@ let router = express.Router();
 
 router.get("/", async (req, res) => {
 	try {
-		// get the column names from the database for "trends" table
-		let columnHeaders = await req.db("trends").columnInfo();
-
-		let columns = Object.keys(columnHeaders).filter(
-			(key) => !["id", "date", "lga_id"].includes(key)
-		);
-
-		columnsDescribed = columns.map((column) => ({
-			id: column,
-			name: column
-				.replace(/_./g, (match) => ` ${match[1].toUpperCase()}`)
-				.replace(/^./, (match) => match.toUpperCase()),
-		}));
+		// Query the trend_types table for all trend types
+		let trendTypes = await req
+			.db("trend_types")
+			.select("id", "name", "description");
 
 		res.status(200).json({
 			error: false,
 			message: "Success",
-			results: { public: columnsDescribed, user: [] },
+			results: trendTypes,
 			retrievedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {

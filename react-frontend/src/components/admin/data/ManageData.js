@@ -11,7 +11,7 @@ import Error from "../../Error/Error";
 import getRequest from "../../lib/getRequest";
 import { UserContext } from "../../../contexts/UserContext";
 import LocalGovernmentAreas from "./LocalGovernmentAreas";
-import DataTypes from "./DataTypes";
+import TrendTypes from "./TrendTypes";
 import UploadData from "./UploadData";
 
 /**
@@ -32,7 +32,7 @@ import UploadData from "./UploadData";
 const ManageData = () => {
 	const { user } = useContext(UserContext);
 	const [lgas, setLgas] = useState([]);
-	const [trendTypes, setTrendTypes] = useState({ public: [], user: [] });
+	const [trendTypes, setTrendTypes] = useState([]);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 
@@ -42,7 +42,7 @@ const ManageData = () => {
 			setError(null);
 
 			const [lgaList, lgaError] = await getRequest("lga/list", false);
-			const [trendTypes, trendTypesError] = await getRequest("trends/types");
+			const [trendTypes, trendTypesError] = await getRequest("trend/types");
 
 			if (lgaError) {
 				setError(lgaError);
@@ -72,30 +72,33 @@ const ManageData = () => {
 			<Row>
 				<Col>
 					<Tabs defaultActiveKey="data" id="manage-data-tabs">
-						<Tab eventKey="lgas" title="Valid LGAa">
+						<Tab eventKey="lgas" title="Valid LGAs">
 							<div className="mt-3">
 								<h3>Valid Local Government Areas</h3>
 								<LocalGovernmentAreas lgas={lgas} />
 							</div>
 						</Tab>
 
-						{user.role === "admin" && (
-							<Tab eventKey="dataType" title="Valid Data Types">
-								<div className="mt-3">
-									<h3>Valid Data Types</h3>
-									<DataTypes trendTypes={trendTypes} />
-								</div>
-							</Tab>
-						)}
-						<Tab eventKey="existingData" title="Your Uploaded Data">
+						<Tab eventKey="dataType" title="Valid Trend Types">
 							<div className="mt-3">
-								<h3>Your Uploaded Data</h3>
+								<h3>Valid Trend Types</h3>
+								<TrendTypes
+									trendTypes={trendTypes}
+									setTrendTypes={setTrendTypes}
+								/>
 							</div>
 						</Tab>
+
 						<Tab eventKey="uploadData" title="Upload Data">
 							<div className="mt-3">
 								<h3>Upload Data</h3>
 								<UploadData lgas={lgas} trendTypes={trendTypes} />
+							</div>
+						</Tab>
+
+						<Tab eventKey="existingData" title="Your Uploaded Data">
+							<div className="mt-3">
+								<h3>Your Uploaded Data</h3>
 							</div>
 						</Tab>
 					</Tabs>

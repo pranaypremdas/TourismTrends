@@ -41,11 +41,19 @@ router.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 // POST Request: retrieve tourism trends
 router.use("/trends", verifyJwtAndAddUser, require("./trends/publicData"));
 
-// POST Request: retrieve tourism trend types
+// GET Request: retrieve tourism trend types
 router.use(
-	"/trends/types",
+	"/trend/types",
 	verifyJwtAndAddUser,
-	require("./trends/trendTypes.js")
+	require("./trends/types/trendTypesGet.js")
+);
+
+// POST Request: Add a new tourism trend type
+router.use(
+	"/trend/types/add",
+	verifyJwtAndAddUser,
+	isEitherAdmin,
+	require("./trends/types/trendTypesAdd.js")
 );
 
 /** USER TREND DATA */
@@ -116,7 +124,7 @@ router.use(
 	"/user/list",
 	verifyJwtAndAddUser,
 	isEitherAdmin,
-	require("./user/listUsers")
+	require("./user/listUsers.js")
 );
 
 /** AUTHENTICATION */
@@ -126,13 +134,13 @@ router.use(
 	"/user/register",
 	verifyJwtAndAddUser,
 	isEitherAdmin,
-	require("./user/register")
+	require("./user/register.js")
 );
 
 // POST Request: User login
-router.use("/user/login", requireEmailAndPassword, require("./user/login"));
+router.use("/user/login", requireEmailAndPassword, require("./user/login.js"));
 
-router.use("/user/first", require("./user/firstUser"));
+router.use("/user/first", require("./user/firstUser.js"));
 
 /** 404 */
 
