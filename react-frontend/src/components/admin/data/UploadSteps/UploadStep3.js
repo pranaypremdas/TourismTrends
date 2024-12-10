@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 // Bootstrap Components
 import { Container, Card, Table, Button } from "react-bootstrap";
@@ -16,10 +16,15 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 		if (error) {
 			setState((s) => ({ ...s, loading: false, error }));
 		} else {
-			// setState((s) => ({ ...s, loading: false, currentStep: 4 }));
-			console.log(response);
+			setState((s) => ({
+				...s,
+				loading: false,
+				currentStep: 4,
+				response: response,
+			}));
 		}
 	};
+	console.log("state", state);
 
 	return (
 		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
@@ -74,7 +79,12 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 							>
 								Back
 							</Button>
-							<Button onClick={() => handleUpload()}>Upload</Button>
+							<Button
+								onClick={() => handleUpload()}
+								disabled={state.loading || state.error || state.processing}
+							>
+								Upload
+							</Button>
 						</div>
 					</Card.Body>
 				</Card>

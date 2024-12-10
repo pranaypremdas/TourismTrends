@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useRef } from "react";
 
 // User Contexts
 import { UserContext } from "../../../contexts/UserContext";
@@ -9,6 +9,7 @@ import Stepper from "../../Stepper/Stepper";
 import UploadStep1 from "./UploadSteps/UploadStep1";
 import UploadStep2 from "./UploadSteps/UploadStep2";
 import UploadStep3 from "./UploadSteps/UploadStep3";
+import UploadStep4 from "./UploadSteps/UploadStep4.js";
 
 function UploadData({ lgas, trendTypes }) {
 	const { user } = useContext(UserContext);
@@ -35,9 +36,6 @@ function UploadData({ lgas, trendTypes }) {
 
 	const fileInputRef = useRef(); // Create a ref for the file input
 
-	console.log("formData", formData);
-	// console.log("state", state);
-
 	if (state.error) {
 		return <Error error={state.error} />;
 	}
@@ -59,6 +57,12 @@ function UploadData({ lgas, trendTypes }) {
 			id: 3,
 			name: "Step 3: Review",
 			Component: UploadStep3,
+			props: { formData, setFormData, state, setState },
+		},
+		{
+			id: 4,
+			name: "Step 4: Complete",
+			Component: UploadStep4,
 			props: { formData, setFormData, state, setState },
 		},
 	];

@@ -58,6 +58,14 @@ router.use(
 
 /** USER TREND DATA */
 
+// GET Request: Retrieve user uploaded data
+router.use(
+	"/trends/user/uploads",
+	verifyJwtAndAddUser,
+	isEitherAdmin,
+	require("./trends/user/getUploads.js")
+);
+
 // POST Request: Retrieve user uploaded data
 router.use(
 	"/trends/user/get",

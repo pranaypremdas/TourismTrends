@@ -150,12 +150,34 @@ router.post("/", async (req, res) => {
 
 		let upload = { ...req.body.upload, client_id: req.user.client_id };
 
-		let dataByType = [];
+		// Ensure date_start and date_end are provided
+		if (!upload.startDate || !upload.endDate) {
+			res.status(400).json({
+				error: true,
+				message: "Request body incomplete, startDate and endDate are required",
+			});
+			return;
+		}
 
+		// Log the upload to "client_uploads" table
+		let uploadId = await req.db("client_uploads").insert({
+			client_id: upload.client_id,
+			name: upload.name,
+			lga_id: Number(upload.lga),
+			start_date: upload.startDate,
+			end_date: upload.endDate,
+			tt_ids: upload.idTypes.trendTypes
+				.map((tt) => tt.colName !== "ignore" && tt.id)
+				.join(","),
+		});
+
+		// Prepare the data to be inserted into the database
+		let dataByType = [];
 		upload.fileData.forEach((row) => {
 			let newRow = {
 				date: row[upload.idTypes.date],
 				lga_id: Number(upload.lga),
+				upload_id: uploadId[0],
 			};
 			upload.idTypes.trendTypes.forEach((column) => {
 				if (column.colName !== "ignore") {
@@ -168,8 +190,6 @@ router.post("/", async (req, res) => {
 			});
 		});
 
-		console.log(dataByType);
-
 		// Check if the user-specific table exists
 		let tableName =
 			req.user.client_id === 1 && req.user.role === "admin"
@@ -177,27 +197,28 @@ router.post("/", async (req, res) => {
 				: `user_trends_${req.user.client_id}`;
 		let tableExists = await req.db.schema.hasTable(tableName);
 
-		// if (!tableExists) {
-		// 	// create the table
-		// 	await req.db.schema.createTable(tableName, (table) => {
-		// 		table.increments("id").primary();
-		// 		table.date("date").notNullable();
-		// 		table.integer("lga_id").notNullable();
-		// 		table.float("average_historical_occupancy").notNullable();
-		// 		table.float("average_daily_rate").notNullable();
-		// 		table.float("average_length_of_stay").notNullable();
-		// 		table.float("average_booking_window").notNullable();
-		// 	});
-		// }
+		if (!tableExists) {
+			// create the table
+			await req.db.schema.createTable(tableName, (table) => {
+				table.increments("id").primary();
+				table.date("date").notNullable();
+				table.integer("lga_id").notNullable();
+				table.integer("upload_id").notNullable();
+				table.integer("tt_id").notNullable();
+				table.float("value").notNullable();
+			});
+		}
 
 		// add data to the table
-		// let response = await req.db(tableName).insert(data);
+		let response = await req.db(tableName).insert(dataByType);
+
+		console.log(response);
 
 		res.status(200).json({
 			error: false,
 			message: "Success",
 			query: {},
-			// addedCount: response,
+			addedCount: response,
 			addedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {

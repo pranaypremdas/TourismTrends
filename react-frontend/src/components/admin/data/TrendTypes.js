@@ -6,9 +6,6 @@ import { Container, Table, Form, Button, Card, Alert } from "react-bootstrap";
 // postRequest
 import postRequest from "../../lib/postRequest";
 
-// Error
-import Error from "../../Error/Error";
-
 const TrendTypes = ({ trendTypes, setTrendTypes }) => {
 	const [newTrendType, setNewTrendType] = useState({
 		name: "",

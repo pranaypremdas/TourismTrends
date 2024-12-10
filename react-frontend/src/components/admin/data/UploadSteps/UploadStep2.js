@@ -44,7 +44,7 @@ function UploadStep1({ state, setState, formData, setFormData }) {
 				}));
 			}
 		}
-	}, [formData.idTypes]);
+	}, [formData.idTypes, setState]);
 
 	return (
 		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">

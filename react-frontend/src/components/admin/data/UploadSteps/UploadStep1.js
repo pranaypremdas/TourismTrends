@@ -111,7 +111,7 @@ function UploadStep1({
 			let minDate = dateArray.reduce((a, b) => (a < b ? a : b));
 			setFormData((s) => ({ ...s, startDate: minDate, endDate: maxDate }));
 		}
-	}, [formData.fileData]);
+	}, [formData.fileData, setFormData, setState]);
 
 	// Render the component
 	return (

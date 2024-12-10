@@ -13,6 +13,7 @@ import { UserContext } from "../../../contexts/UserContext";
 import LocalGovernmentAreas from "./LocalGovernmentAreas";
 import TrendTypes from "./TrendTypes";
 import UploadData from "./UploadData";
+import UserUploads from "./UserUploads";
 
 /**
  * ManageData component fetches and displays users and clients information.
@@ -33,6 +34,7 @@ const ManageData = () => {
 	const { user } = useContext(UserContext);
 	const [lgas, setLgas] = useState([]);
 	const [trendTypes, setTrendTypes] = useState([]);
+	const [uploads, setUploads] = useState([]);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
 
@@ -43,14 +45,18 @@ const ManageData = () => {
 
 			const [lgaList, lgaError] = await getRequest("lga/list", false);
 			const [trendTypes, trendTypesError] = await getRequest("trend/types");
+			const [uploads, uploadsError] = await getRequest("trends/user/uploads");
 
 			if (lgaError) {
 				setError(lgaError);
 			} else if (trendTypesError) {
 				setError(trendTypesError);
+			} else if (uploadsError) {
+				setError(uploadsError);
 			} else {
 				setLgas(lgaList.results);
 				setTrendTypes(trendTypes.results);
+				setUploads(uploads.results);
 			}
 
 			setLoading(false);
@@ -99,6 +105,7 @@ const ManageData = () => {
 						<Tab eventKey="existingData" title="Your Uploaded Data">
 							<div className="mt-3">
 								<h3>Your Uploaded Data</h3>
+								<UserUploads uploads={uploads} trendTypes={trendTypes} />
 							</div>
 						</Tab>
 					</Tabs>
