@@ -10,7 +10,6 @@ let router = express.Router();
  * @param {Object} req.body - The body of the request containing the request parameters.
  * @param {Array<string>} req.body.type - The type of data to fetch (optional).
  * @param {Array<string>} req.body.dateRange - The date range to filter the data (optional).
- * @param {Array<string>} req.data.region - The region to filter the data (optional).
  * @param {Object} res - The response object sent to the client.
  * @returns {Promise<Object>} The response object containing the query results.
  */
@@ -31,11 +30,6 @@ let router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               region:
- *                 type: array
- *                 items:
- *                   type: integer
- *                 example: [1, 2, 3, 4]
  *               type:
  *                 type: array
  *                 items:
@@ -149,8 +143,6 @@ let router = express.Router();
  */
 router.post("/", async (req, res) => {
 	try {
-		let region = req.body.region || [];
-
 		// limit to "owner" and "business" client types
 		if ([!"owner", "business"].includes(req.user.client_type)) {
 			res.status(403).json({
@@ -212,7 +204,6 @@ router.post("/", async (req, res) => {
 			error: false,
 			message: "Success",
 			query: {
-				region,
 				type,
 				dateRange,
 			},

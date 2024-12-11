@@ -70,7 +70,6 @@ async function verifyJwtAndAddUser(req, res, next) {
 			jwt: jwtVerified,
 		};
 	} catch (e) {
-		console.log(e);
 		if (e.name === "TokenExpiredError") {
 			res.status(401).json({ error: true, message: "JWT token has expired" });
 		} else if (e.name === "JsonWebTokenError") {

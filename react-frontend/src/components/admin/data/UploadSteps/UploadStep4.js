@@ -1,7 +1,7 @@
 import React from "react";
 
 // Bootstrap Components
-import { Container, Card } from "react-bootstrap";
+import { Container, Card, Button } from "react-bootstrap";
 
 function UploadStep3({ state, setState, formData, setFormData }) {
 	// send the data to the server
@@ -15,6 +15,29 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 					</Card.Title>
 					<Card.Body>
 						<Card.Text>Upload is Complete</Card.Text>
+						<Button
+							onClick={() => {
+								setState((s) => ({
+									...s,
+									message: null,
+									processing: false,
+									loading: false,
+									error: null,
+									currentStep: 1,
+								}));
+								setFormData({
+									name: "",
+									lga: "",
+									idTypes: { date: "", trendTypes: [], headers: [] },
+									startDate: null,
+									endDate: null,
+									fileData: null,
+									fileName: null,
+								});
+							}}
+						>
+							Restart
+						</Button>
 					</Card.Body>
 				</Card>
 			)}

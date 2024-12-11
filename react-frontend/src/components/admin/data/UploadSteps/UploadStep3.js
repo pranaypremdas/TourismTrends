@@ -6,7 +6,7 @@ import { Container, Card, Table, Button } from "react-bootstrap";
 // custom components
 import postRequest from "../../../lib/postRequest";
 
-function UploadStep3({ state, setState, formData, setFormData }) {
+function UploadStep3({ state, setState, formData, setFormData, setUploads }) {
 	// send the data to the server
 	const handleUpload = async () => {
 		setState((s) => ({ ...s, loading: true, error: null }));
@@ -16,15 +16,14 @@ function UploadStep3({ state, setState, formData, setFormData }) {
 		if (error) {
 			setState((s) => ({ ...s, loading: false, error }));
 		} else {
+			setUploads((u) => [...u, response.results]);
 			setState((s) => ({
 				...s,
 				loading: false,
 				currentStep: 4,
-				response: response,
 			}));
 		}
 	};
-	console.log("state", state);
 
 	return (
 		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">

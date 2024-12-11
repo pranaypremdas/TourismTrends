@@ -78,24 +78,19 @@ const Dashboard = () => {
 		resizable: true,
 	};
 
-	console.log("trendTypes", trendTypes);
-
+	// fetch data from the server
 	const fetchData = async (isYearOnYear = false) => {
 		setLoading(true);
 		try {
-			const regionToUse = selectedRegion || user.client.lgaIds[0];
-
 			const yearOnYearStartDate = `${startYear}-01-01`;
 			const yearOnYearEndDate = `${endYear}-12-31`;
 
 			const requestBody = isYearOnYear
 				? {
-						// region: [regionToUse],
 						dateRange: [yearOnYearStartDate, yearOnYearEndDate],
 						type: [selectedTrendType],
 				  }
 				: {
-						// region: user.client.lgaIds,
 						dateRange: [startDate, endDate],
 						type: [selectedTrendType],
 				  };
@@ -107,7 +102,8 @@ const Dashboard = () => {
 			// );
 
 			if (trendError) {
-				setError(trendError);
+				setError(trendError.message);
+				return;
 			}
 			// else if (userTrendError) {
 			// 	setError(userTrendError);
@@ -116,7 +112,7 @@ const Dashboard = () => {
 				const mappedData = trendData.results.map((item) => ({
 					date: item.date,
 					lga_name: item.lga_name,
-					[selectedTrendType]: item[selectedTrendType],
+					[selectedTrendType]: item.value,
 				}));
 
 				setRowData(mappedData);
@@ -216,7 +212,7 @@ const Dashboard = () => {
 	}, [trendTypes, lgas, activeTab, selectedTrendType, selectedRegion]);
 
 	if (error) {
-		return <Error message={error} />;
+		return <Error error={error} />;
 	}
 
 	return (

@@ -91,6 +91,7 @@ const ManageData = () => {
 								<TrendTypes
 									trendTypes={trendTypes}
 									setTrendTypes={setTrendTypes}
+									user={user}
 								/>
 							</div>
 						</Tab>
@@ -98,14 +99,22 @@ const ManageData = () => {
 						<Tab eventKey="uploadData" title="Upload Data">
 							<div className="mt-3">
 								<h3>Upload Data</h3>
-								<UploadData lgas={lgas} trendTypes={trendTypes} />
+								<UploadData
+									lgas={lgas}
+									trendTypes={trendTypes}
+									setUploads={setUploads}
+								/>
 							</div>
 						</Tab>
 
 						<Tab eventKey="existingData" title="Your Uploaded Data">
 							<div className="mt-3">
 								<h3>Your Uploaded Data</h3>
-								<UserUploads uploads={uploads} trendTypes={trendTypes} />
+								<UserUploads
+									uploads={uploads}
+									trendTypes={trendTypes}
+									// setUploads={setUploads}
+								/>
 							</div>
 						</Tab>
 					</Tabs>

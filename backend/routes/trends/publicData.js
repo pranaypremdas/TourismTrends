@@ -64,8 +64,6 @@ let router = express.Router();
  *                     properties:
  *                       id:
  *                         type: integer
- *                       region:
- *                         type: string
  *                       type:
  *                         type: string
  *                       date:
@@ -94,7 +92,7 @@ let router = express.Router();
  *                   type: string
  *             example:
  *               error: true
- *               message: "Invalid region"
+ *               message: "Invalid date range"
  *       500:
  *         description: Internal server error
  *         content:
@@ -128,6 +126,18 @@ router.post("/", async (req, res) => {
 			return;
 		}
 
+		// check in trends db exists
+		let tableExists = await req.db.schema.hasTable("trends");
+
+		if (!tableExists) {
+			res.status(404).json({
+				error: true,
+				message: "Data not found",
+			});
+			return;
+		}
+
+		// Fetch the data from the database
 		let results = await req
 			.db("trends as t")
 			.select(
@@ -136,7 +146,8 @@ router.post("/", async (req, res) => {
 				"lgas.lga_name",
 				"t.tt_id",
 				"t.date",
-				"t.value"
+				"t.value",
+				"tt.name"
 			)
 			.join("lgas", "t.lga_id", "lgas.id")
 			.join("trend_types as tt", "t.tt_id", "tt.id")
@@ -156,7 +167,6 @@ router.post("/", async (req, res) => {
 			error: false,
 			message: "Success",
 			query: {
-				region,
 				type,
 				dateRange,
 			},

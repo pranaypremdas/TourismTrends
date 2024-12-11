@@ -98,7 +98,7 @@ let router = express.Router();
 router.get("/", async (req, res) => {
 	try {
 		// Check if the user is a business client
-		if (req.user.role === "Government") {
+		if (req.user.type === "Government") {
 			res.status(403).json({
 				error: true,
 				message: "Wrong client type",
@@ -106,17 +106,34 @@ router.get("/", async (req, res) => {
 			return;
 		}
 
-		// Log the upload to "client_uploads" table
-		let uploadsByClient = await req
-			.db("client_uploads")
-			.where("client_id", req.user.client_id);
+		if (
+			req.user.client_type === "Business" &&
+			req.user.role === "client_admin"
+		) {
+			// Log the upload to "client_uploads" table
+			let uploadsByClient = await req
+				.db("client_uploads")
+				.where("client_id", req.user.client_id);
 
-		res.status(200).json({
-			error: false,
-			message: "Success",
-			results: uploadsByClient,
-			addedAt: new Date().toLocaleString(),
-		});
+			res.status(200).json({
+				error: false,
+				message: "Success",
+				results: uploadsByClient,
+				addedAt: new Date().toLocaleString(),
+			});
+		}
+
+		if (req.user.client_type === "admin" && req.user.role === "admin") {
+			// Log the upload to "client_uploads" table
+			let uploadsByClient = await req.db("client_uploads");
+
+			res.status(200).json({
+				error: false,
+				message: "Success",
+				results: uploadsByClient,
+				addedAt: new Date().toLocaleString(),
+			});
+		}
 	} catch (error) {
 		res.fiveHundred(error);
 	}

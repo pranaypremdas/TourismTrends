@@ -11,7 +11,7 @@ import UploadStep2 from "./UploadSteps/UploadStep2";
 import UploadStep3 from "./UploadSteps/UploadStep3";
 import UploadStep4 from "./UploadSteps/UploadStep4.js";
 
-function UploadData({ lgas, trendTypes }) {
+function UploadData({ lgas, trendTypes, setUploads }) {
 	const { user } = useContext(UserContext);
 
 	const [formData, setFormData] = useState({
@@ -57,7 +57,7 @@ function UploadData({ lgas, trendTypes }) {
 			id: 3,
 			name: "Step 3: Review",
 			Component: UploadStep3,
-			props: { formData, setFormData, state, setState },
+			props: { formData, setFormData, state, setState, setUploads },
 		},
 		{
 			id: 4,

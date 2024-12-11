@@ -6,7 +6,7 @@ import { Container, Table, Form, Button, Card, Alert } from "react-bootstrap";
 // postRequest
 import postRequest from "../../lib/postRequest";
 
-const TrendTypes = ({ trendTypes, setTrendTypes }) => {
+const TrendTypes = ({ trendTypes, setTrendTypes, user }) => {
 	const [newTrendType, setNewTrendType] = useState({
 		name: "",
 		description: "",
@@ -68,49 +68,53 @@ const TrendTypes = ({ trendTypes, setTrendTypes }) => {
 					</Table>
 				)}
 			</Container>
-			<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
-				<Card className="p-4">
-					<Card.Title className="text-center">
-						<h5>Add Trend Type</h5>
-					</Card.Title>
-					<Card.Body>
-						<Form onSubmit={handleSubmit}>
-							<Form.Group controlId="formTrendTypeName">
-								<Form.Label>Name</Form.Label>
-								<Form.Control
-									type="text"
-									name="name"
-									value={newTrendType.name}
-									onChange={handleChange}
-									required
-								/>
-							</Form.Group>
-							<Form.Group controlId="formTrendTypeDescription">
-								<Form.Label>Description</Form.Label>
-								<Form.Control
-									type="text"
-									name="description"
-									value={newTrendType.description}
-									onChange={handleChange}
-									required
-								/>
-							</Form.Group>
-							<div className="d-flex justify-content-between mt-2">
-								<Button
-									variant="warning"
-									type="reset"
-									onClick={() => setNewTrendType({ name: "", description: "" })}
-								>
-									Reset
-								</Button>
-								<Button variant="primary" type="submit">
-									Add Trend Type
-								</Button>
-							</div>
-						</Form>
-					</Card.Body>
-				</Card>
-			</Container>
+			{user.role === "admin" && (
+				<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
+					<Card className="p-4">
+						<Card.Title className="text-center">
+							<h5>Add Trend Type</h5>
+						</Card.Title>
+						<Card.Body>
+							<Form onSubmit={handleSubmit}>
+								<Form.Group controlId="formTrendTypeName">
+									<Form.Label>Name</Form.Label>
+									<Form.Control
+										type="text"
+										name="name"
+										value={newTrendType.name}
+										onChange={handleChange}
+										required
+									/>
+								</Form.Group>
+								<Form.Group controlId="formTrendTypeDescription">
+									<Form.Label>Description</Form.Label>
+									<Form.Control
+										type="text"
+										name="description"
+										value={newTrendType.description}
+										onChange={handleChange}
+										required
+									/>
+								</Form.Group>
+								<div className="d-flex justify-content-between mt-2">
+									<Button
+										variant="warning"
+										type="reset"
+										onClick={() =>
+											setNewTrendType({ name: "", description: "" })
+										}
+									>
+										Reset
+									</Button>
+									<Button variant="primary" type="submit">
+										Add Trend Type
+									</Button>
+								</div>
+							</Form>
+						</Card.Body>
+					</Card>
+				</Container>
+			)}
 		</>
 	);
 };

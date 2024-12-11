@@ -139,6 +139,14 @@ router.post("/", async (req, res) => {
 			return;
 		}
 
+		if (req.user.role !== "admin" && req.user.role !== "client_admin") {
+			res.status(403).json({
+				error: true,
+				message: "Forbidden",
+			});
+			return;
+		}
+
 		// Check if the upload object is present in the request body
 		if (!req.body.upload || typeof req.body.upload !== "object") {
 			res.status(400).json({
@@ -201,7 +209,7 @@ router.post("/", async (req, res) => {
 			// create the table
 			await req.db.schema.createTable(tableName, (table) => {
 				table.increments("id").primary();
-				table.date("date").notNullable();
+				table.varchar("date", 10).notNullable();
 				table.integer("lga_id").notNullable();
 				table.integer("upload_id").notNullable();
 				table.integer("tt_id").notNullable();
@@ -210,15 +218,18 @@ router.post("/", async (req, res) => {
 		}
 
 		// add data to the table
-		let response = await req.db(tableName).insert(dataByType);
+		await req.db(tableName).insert(dataByType);
 
-		console.log(response);
+		let insertedEntry = await req
+			.db("client_uploads")
+			.where("id", uploadId[0])
+			.first();
 
 		res.status(200).json({
 			error: false,
 			message: "Success",
 			query: {},
-			addedCount: response,
+			results: insertedEntry,
 			addedAt: new Date().toLocaleString(),
 		});
 	} catch (error) {
