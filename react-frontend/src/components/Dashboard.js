@@ -78,6 +78,8 @@ const Dashboard = () => {
 		resizable: true,
 	};
 
+	console.log(activeTab);
+
 	// fetch data from the server
 	const fetchData = async (isYearOnYear = false) => {
 		setLoading(true);
@@ -100,6 +102,8 @@ const Dashboard = () => {
 			// 	"trends/user/get",
 			// 	requestBody
 			// );
+
+			console.log(trendData);
 
 			if (trendError) {
 				setError(trendError.message);
@@ -207,7 +211,8 @@ const Dashboard = () => {
 	// get data on initial load
 	useEffect(() => {
 		if (trendTypes.length > 0 && lgas.length > 0) {
-			fetchData(activeTab === "yearOnYear");
+			let isYearOnYear = Boolean(activeTab === "yearOnYear");
+			fetchData(isYearOnYear);
 		}
 	}, [trendTypes, lgas, activeTab, selectedTrendType, selectedRegion]);
 
