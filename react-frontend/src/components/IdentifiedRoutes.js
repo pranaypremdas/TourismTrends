@@ -69,7 +69,9 @@ function IdentifiedRoutes() {
 					{user && (user.role === "admin" || user.role === "client_admin") && (
 						<>
 							<Route path="/admin/users" element={<ManageUsers />} />
-							<Route path="/admin/data" element={<ManageData />} />
+							{user.client.type !== "Government" && (
+								<Route path="/admin/data" element={<ManageData />} />
+							)}
 						</>
 					)}
 

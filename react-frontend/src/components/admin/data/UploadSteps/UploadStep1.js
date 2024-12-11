@@ -147,11 +147,10 @@ function UploadStep1({
 							required
 						>
 							<option value="">Select Location</option>
-							{user.client.lgaIds.map((id) => {
-								const lga = state.lgas.find((lga) => lga.id === id);
+							{state.lgas.map((lga) => {
 								return (
-									<option key={id} value={id}>
-										{lga ? lga.lga_name : "Unknown"}
+									<option key={lga.id} value={lga.id}>
+										{lga.lga_name}
 									</option>
 								);
 							})}

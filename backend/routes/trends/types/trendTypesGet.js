@@ -45,24 +45,9 @@ let router = express.Router();
  *               error: false
  *               message: "Data fetched successfully"
  *               results:
- *                 - "average_historical_occupancy"
- *                 - "average_historical_rate"
- *                 - "average_length_of_stay"
- *                 - "average_daily_rate"
- *       400:
- *         description: Invalid request parameters
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: boolean
- *                 message:
- *                   type: string
- *             example:
- *               error: true
- *               message: "Invalid region"
+ *                 - id: 1
+ *                   name: "Tourism"
+ *                   description: "Tourism trends"
  *       500:
  *         description: Internal server error
  *         content:

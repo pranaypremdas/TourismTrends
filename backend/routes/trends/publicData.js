@@ -154,7 +154,6 @@ router.post("/", async (req, res) => {
 			.whereIn("t.tt_id", type)
 			.whereBetween("t.date", dateRange);
 
-
 		res.status(200).json({
 			error: false,
 			message: "Success",

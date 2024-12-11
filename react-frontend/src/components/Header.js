@@ -26,9 +26,11 @@ const Header = () => {
 								<NavDropdown.Item href="/admin/users">
 									Manage Users
 								</NavDropdown.Item>
-								<NavDropdown.Item href="/admin/data">
-									Manage Data
-								</NavDropdown.Item>
+								{user.client.type !== "Government" && (
+									<NavDropdown.Item href="/admin/data">
+										Manage Data
+									</NavDropdown.Item>
+								)}
 								<NavDropdown.Divider />
 								<NavDropdown.Item href="/user/profile">
 									My Profile
