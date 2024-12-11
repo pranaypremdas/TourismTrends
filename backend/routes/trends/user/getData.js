@@ -144,13 +144,16 @@ let router = express.Router();
 router.post("/", async (req, res) => {
 	try {
 		// limit to "owner" and "business" client types
-		if ([!"owner", "business"].includes(req.user.client_type)) {
+		if ([!"admin", "Business"].includes(req.user.client_type)) {
 			res.status(403).json({
 				error: true,
-				message: `Wrong client type, you are a ${req.user.client_type} client`,
+				message: `Wrong client type: ${req.user.client_type}`,
 			});
 			return;
 		}
+
+		// Get the type from the body or use the default
+		let type = req.body.type || ["1"];
 
 		// Get the date range from the body or use the default
 		let dateRange = req.body.dateRange || ["2023-01-01", "2024-12-31"];
@@ -179,26 +182,22 @@ router.post("/", async (req, res) => {
 			return;
 		}
 
+		// Fetch the data from the database
 		let results = await req
-			.db(`${tableName} as t`)
+			.db("trends as t")
 			.select(
-				"t.id as id",
-				"t.date as date",
-				"t.lga_id as lga_id",
-				"t.tt_id as type",
-				"t.value as value"
+				"t.id",
+				"t.lga_id",
+				"lgas.lga_name",
+				"t.tt_id",
+				"t.date",
+				"t.value",
+				"tt.name"
 			)
 			.join("lgas", "t.lga_id", "lgas.id")
+			.join("trend_types as tt", "t.tt_id", "tt.id")
+			.whereIn("t.tt_id", type)
 			.whereBetween("t.date", dateRange);
-
-		// Case where no data found
-		if (!results || results.length === 0) {
-			res.status(400).json({
-				error: true,
-				message: "No data found",
-			});
-			return;
-		}
 
 		res.status(200).json({
 			error: false,

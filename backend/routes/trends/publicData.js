@@ -154,14 +154,6 @@ router.post("/", async (req, res) => {
 			.whereIn("t.tt_id", type)
 			.whereBetween("t.date", dateRange);
 
-		// Case where no data found
-		if (!results || results.length === 0) {
-			res.status(400).json({
-				error: true,
-				message: "No results found",
-			});
-			return;
-		}
 
 		res.status(200).json({
 			error: false,
