@@ -82,14 +82,6 @@ router.use(
 	require("./trends/user/addData.js")
 );
 
-// POST Request: Delete user data
-// router.use(
-// 	"/trends/user/delete",
-// 	verifyJwtAndAddUser,
-// 	isEitherAdmin,
-// 	require("./trends/user/deleteData.js")
-// );
-
 // LGA list
 router.use("/lga/list", require("./lga/list"));
 

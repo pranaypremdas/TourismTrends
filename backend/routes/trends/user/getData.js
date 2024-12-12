@@ -144,7 +144,7 @@ let router = express.Router();
 router.post("/", async (req, res) => {
 	try {
 		// limit to "owner" and "business" client types
-		if ([!"admin", "Business"].includes(req.user.client_type)) {
+		if (!["admin", "Business"].includes(req.user.client_type)) {
 			res.status(403).json({
 				error: true,
 				message: `Wrong client type: ${req.user.client_type}`,
@@ -178,13 +178,14 @@ router.post("/", async (req, res) => {
 			res.status(404).json({
 				error: true,
 				message: "User-specific data not found",
+				noUserTable: true,
 			});
 			return;
 		}
 
 		// Fetch the data from the database
 		let results = await req
-			.db("trends as t")
+			.db(`${tableName} as t`)
 			.select(
 				"t.id",
 				"t.lga_id",
@@ -192,10 +193,12 @@ router.post("/", async (req, res) => {
 				"t.tt_id",
 				"t.date",
 				"t.value",
-				"tt.name"
+				"tt.name",
+				"cu.name as upload_name"
 			)
 			.join("lgas", "t.lga_id", "lgas.id")
 			.join("trend_types as tt", "t.tt_id", "tt.id")
+			.join("client_uploads as cu", "t.upload_id", "cu.id")
 			.whereIn("t.tt_id", type)
 			.whereBetween("t.date", dateRange);
 

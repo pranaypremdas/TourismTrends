@@ -6,7 +6,12 @@ import { Container, Card, Table, Button } from "react-bootstrap";
 // custom components
 import postRequest from "../../../lib/postRequest";
 
+// Contexts
+import { UserContext } from "../../../../contexts/UserContext.js";
+
 function UploadStep3({ state, setState, formData, setFormData, setUploads }) {
+	const { setUser } = React.useContext(UserContext);
+
 	// send the data to the server
 	const handleUpload = async () => {
 		setState((s) => ({ ...s, loading: true, error: null }));
@@ -22,6 +27,7 @@ function UploadStep3({ state, setState, formData, setFormData, setUploads }) {
 				loading: false,
 				currentStep: 4,
 			}));
+			setUser((u) => ({ ...u, user: { ...u.user, dataExists: true } }));
 		}
 	};
 

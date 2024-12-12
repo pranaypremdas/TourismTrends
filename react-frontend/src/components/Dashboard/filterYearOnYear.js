@@ -12,13 +12,19 @@ const filterYearOnYear = (
 	selectedTrendType,
 	rowData,
 	lgas,
-	setChartData
+	setChartData,
+	clientDataKey
 ) => {
 	// Process data for year-on-year visualization
 	const groupedByYear = {};
-	let selectedRegionName = lgas.find(
-		(lga) => lga.id === Number(selectedRegion)
-	).lga_name;
+	let selectedRegionName = "";
+
+	if (clientDataKey === selectedRegion) {
+		selectedRegionName = selectedRegion;
+	} else {
+		selectedRegionName =
+			lgas.find((lga) => lga.id === Number(selectedRegion)).lga_name || "";
+	}
 
 	rowData
 		.filter((item) => item.lga_name === selectedRegionName)

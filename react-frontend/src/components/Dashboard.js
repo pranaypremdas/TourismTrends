@@ -49,6 +49,8 @@ const Dashboard = () => {
 	const [endYear, setEndYear] = useState("2024");
 	const [selectedTrendType, setSelectedTrendType] = useState("1");
 	const [selectedRegion, setSelectedRegion] = useState("1");
+	const [viewClientData, setViewClientData] = useState(false);
+	const [clientDataKey, setClientDataKey] = useState(null);
 
 	// other state
 	const [trendTypes, setTrendTypes] = useState([]);
@@ -95,26 +97,46 @@ const Dashboard = () => {
 						type: [selectedTrendType],
 				  };
 
+			let mappedData = [];
 			const [trendData, trendError] = await postRequest("trends", requestBody);
-			// const [userTrendData, userTrendError] = await postRequest(
-			// 	"trends/user/get",
-			// 	requestBody
-			// );
 
+			if (viewClientData && user.client_id !== 1) {
+				const [userTrendData, userTrendError] = await postRequest(
+					"trends/user/get",
+					requestBody
+				);
+
+				if (userTrendError) {
+					if (userTrendError && userTrendError.noUserTable) {
+					}
+					setError(userTrendError);
+				}
+
+				let clientTrendDataKey = `${userTrendData.results[0].lga_name} (${userTrendData.results[0].upload_name})`;
+
+				userTrendData.results.forEach((item) => {
+					mappedData.push({
+						date: item.date,
+						lga_name: clientTrendDataKey,
+						[selectedTrendType]: item.value,
+					});
+				});
+
+				setClientDataKey(clientTrendDataKey);
+			}
 			if (trendError) {
 				setError(trendError.message);
 				return;
-			}
-			// else if (userTrendError) {
-			// 	setError(userTrendError);
-			// }
-			else {
-				const mappedData = trendData.results.map((item) => ({
-					date: item.date,
-					lga_name: item.lga_name,
-					[selectedTrendType]: item.value,
-				}));
+			} else {
+				trendData.results.forEach((item) => {
+					mappedData.push({
+						date: item.date,
+						lga_name: item.lga_name,
+						[selectedTrendType]: item.value,
+					});
+				});
 
+				console.log("mappedData", mappedData);
 				setRowData(mappedData);
 
 				if (isYearOnYear) {
@@ -124,7 +146,8 @@ const Dashboard = () => {
 						selectedTrendType,
 						mappedData,
 						lgas,
-						setChartData
+						setChartData,
+						clientDataKey
 					);
 				} else {
 					// Original chart processing for custom date range
@@ -192,7 +215,8 @@ const Dashboard = () => {
 				selectedTrendType,
 				rowData,
 				lgas,
-				setChartData
+				setChartData,
+				clientDataKey
 			);
 		}
 	}, [selectedRegion, rowData, activeTab, selectedTrendType, lgas]);
@@ -203,7 +227,7 @@ const Dashboard = () => {
 			let isYearOnYear = Boolean(activeTab === "yearOnYear");
 			fetchData(isYearOnYear);
 		}
-	}, [trendTypes, lgas, activeTab, selectedTrendType]);
+	}, [trendTypes, lgas, activeTab, selectedTrendType, viewClientData]);
 
 	if (error) {
 		return <Error error={error} />;
@@ -230,6 +254,17 @@ const Dashboard = () => {
 					))}
 				</Form.Control>
 			</Form.Group>
+
+			{user.dataExists && (
+				<Form.Group controlId="checkClientData" className="mb-4">
+					<Form.Check
+						type="checkbox"
+						checked={viewClientData}
+						label="View client data for this trend"
+						onChange={(e) => setViewClientData(e.target.checked)}
+					/>
+				</Form.Group>
+			)}
 
 			<Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k)}>
 				<Nav variant="tabs" className="mb-4">
@@ -293,16 +328,19 @@ const Dashboard = () => {
 													value={selectedRegion}
 													onChange={(e) => setSelectedRegion(e.target.value)}
 												>
-													{lgas && lgas.length > 0 ? (
+													{lgas &&
+														lgas.length > 0 &&
 														lgas.map((lga) => {
 															return (
 																<option key={lga.id} value={lga.id}>
 																	{lga.lga_name}
 																</option>
 															);
-														})
-													) : (
-														<option disabled>No regions available</option>
+														})}
+													{viewClientData && (
+														<option key={"client_data"} value={clientDataKey}>
+															{clientDataKey}
+														</option>
 													)}
 												</Form.Control>
 											</Form.Group>
