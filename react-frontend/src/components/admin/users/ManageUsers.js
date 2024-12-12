@@ -106,7 +106,7 @@ const ManageUsers = () => {
 			setLoading(false);
 		};
 		getUsers();
-	}, [user.role]);
+	}, [user.role, user.client_id]);
 
 	if (loading) {
 		return <Loading />;

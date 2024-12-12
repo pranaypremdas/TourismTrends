@@ -15,8 +15,13 @@ import {
 	Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+
+// custom functions
 import postRequest from "./lib/postRequest";
 import getRequest from "./lib/getRequest";
+import filterYearOnYear from "./Dashboard/filterYearOnYear";
+
+// custom components
 import Error from "./Error/Error";
 
 ChartJS.register(
@@ -29,6 +34,13 @@ ChartJS.register(
 	Legend
 );
 
+/**
+ * Calculates metadata statistics (minimum, maximum, mean, and standard deviation) for a given key in an array of objects.
+ *
+ * @param {Array<Object>} data - The array of objects containing the data.
+ * @param {string} key - The key to extract values from each object in the array.
+ * @returns {Object|null} An object containing the calculated metadata (min, max, mean, stdDev) or null if no valid values are found.
+ */
 const calculateMetadata = (data, key) => {
 	const values = data.map((item) => item[key]).filter((v) => v != null);
 	if (!values.length) return null;
@@ -46,18 +58,20 @@ const calculateMetadata = (data, key) => {
 
 const Dashboard = () => {
 	const { user } = useContext(UserContext);
+
+	// data display state
 	const [rowData, setRowData] = useState([]);
 	const [chartData, setChartData] = useState(null);
-	const [startDate, setStartDate] = useState("2024-01-01");
 
 	// form state
+	const [startDate, setStartDate] = useState("2024-01-01");
 	const [endDate, setEndDate] = useState("2024-01-31");
 	const [startYear, setStartYear] = useState("2023");
 	const [endYear, setEndYear] = useState("2024");
 	const [selectedTrendType, setSelectedTrendType] = useState("1");
-	const [selectedRegion, setSelectedRegion] = useState("");
+	const [selectedRegion, setSelectedRegion] = useState("1");
 
-	// data state
+	// other state
 	const [trendTypes, setTrendTypes] = useState([]);
 	const [lgas, setLgas] = useState([]);
 	const [loading, setLoading] = useState(false);
@@ -78,9 +92,14 @@ const Dashboard = () => {
 		resizable: true,
 	};
 
-	console.log(activeTab);
-
-	// fetch data from the server
+	/**
+	 * Fetches trend data and processes it for visualization.
+	 *
+	 * @param {boolean} [isYearOnYear=false] - Flag to determine if the data should be fetched for year-on-year comparison.
+	 * @returns {Promise<void>} - A promise that resolves when the data fetching and processing is complete.
+	 *
+	 * @throws {Error} - Throws an error if the data fetching fails.
+	 */
 	const fetchData = async (isYearOnYear = false) => {
 		setLoading(true);
 		try {
@@ -103,8 +122,6 @@ const Dashboard = () => {
 			// 	requestBody
 			// );
 
-			console.log(trendData);
-
 			if (trendError) {
 				setError(trendError.message);
 				return;
@@ -123,34 +140,13 @@ const Dashboard = () => {
 
 				if (isYearOnYear) {
 					// Process data for year-on-year visualization
-					const groupedByYear = {};
-					mappedData.forEach((item) => {
-						const [year, month, day] = item.date.split("-");
-						const key = `${month}-${day}`; // Align by month and day
-						if (month !== "2" && day !== "29") {
-							if (!groupedByYear[year]) groupedByYear[year] = {};
-							if (!groupedByYear[year][key]) groupedByYear[year][key] = 0;
-							groupedByYear[year][key] += item[selectedTrendType];
-						}
-					});
-
-					const datasets = Object.entries(groupedByYear).map(
-						([year, data]) => ({
-							label: `Year ${year}`,
-							data: Object.entries(data).map(([date, value]) => ({
-								x: date,
-								y: value,
-							})),
-							fill: false,
-							borderColor: `#${Math.floor(Math.random() * 16777215).toString(
-								16
-							)}`,
-						})
+					filterYearOnYear(
+						selectedRegion,
+						selectedTrendType,
+						mappedData,
+						lgas,
+						setChartData
 					);
-
-					setChartData({
-						datasets,
-					});
 				} else {
 					// Original chart processing for custom date range
 					const groupedData = mappedData.reduce((acc, item) => {
@@ -208,13 +204,27 @@ const Dashboard = () => {
 		fetchInitialData();
 	}, []);
 
-	// get data on initial load
+	// isYearonYear Region change re-filter data
+	useEffect(() => {
+		if (activeTab === "yearOnYear") {
+			// Process data for year-on-year visualization
+			filterYearOnYear(
+				selectedRegion,
+				selectedTrendType,
+				rowData,
+				lgas,
+				setChartData
+			);
+		}
+	}, [selectedRegion, rowData, activeTab, selectedTrendType, lgas]);
+
+	// get data from api on form change
 	useEffect(() => {
 		if (trendTypes.length > 0 && lgas.length > 0) {
 			let isYearOnYear = Boolean(activeTab === "yearOnYear");
 			fetchData(isYearOnYear);
 		}
-	}, [trendTypes, lgas, activeTab, selectedTrendType, selectedRegion]);
+	}, [trendTypes, lgas, activeTab, selectedTrendType]);
 
 	if (error) {
 		return <Error error={error} />;

@@ -3,9 +3,6 @@ import React from "react";
 // Bootstrap Components
 import { Container, Table } from "react-bootstrap";
 
-// custom components
-import postRequest from "../../lib/postRequest";
-
 const UserUploads = ({ uploads, trendTypes }) => {
 	return (
 		<Container>
