@@ -60,6 +60,7 @@ const Dashboard = () => {
 	const [activeTab, setActiveTab] = useState("customDates");
 	const [dataViewTab, setDataViewTab] = useState("graph");
 	const [metadata, setMetadata] = useState(null);
+	const [clientMetaData, setClientMetaData] = useState(null);
 
 	const [columnDefs] = useState([
 		{ headerName: "Date", field: "date" },
@@ -97,7 +98,7 @@ const Dashboard = () => {
 						type: [selectedTrendType],
 				  };
 
-			let mappedData = [];
+			let clientMappedData = [];
 			const [trendData, trendError] = await postRequest("trends", requestBody);
 
 			if (viewClientData && user.client_id !== 1) {
@@ -115,7 +116,7 @@ const Dashboard = () => {
 				let clientTrendDataKey = `${userTrendData.results[0].lga_name} (${userTrendData.results[0].upload_name})`;
 
 				userTrendData.results.forEach((item) => {
-					mappedData.push({
+					clientMappedData.push({
 						date: item.date,
 						lga_name: clientTrendDataKey,
 						[selectedTrendType]: item.value,
@@ -123,20 +124,22 @@ const Dashboard = () => {
 				});
 
 				setClientDataKey(clientTrendDataKey);
+				let calculatedClientMetaData = calculateMetaData(
+					clientMappedData,
+					selectedTrendType
+				);
+				setClientMetaData(calculatedClientMetaData);
 			}
 			if (trendError) {
 				setError(trendError.message);
 				return;
 			} else {
-				trendData.results.forEach((item) => {
-					mappedData.push({
-						date: item.date,
-						lga_name: item.lga_name,
-						[selectedTrendType]: item.value,
-					});
-				});
-
-				console.log("mappedData", mappedData);
+				let trendMappedData = trendData.results.map((item) => ({
+					date: item.date,
+					lga_name: item.lga_name,
+					[selectedTrendType]: item.value,
+				}));
+				let mappedData = [...trendMappedData, ...clientMappedData];
 				setRowData(mappedData);
 
 				if (isYearOnYear) {
@@ -177,7 +180,7 @@ const Dashboard = () => {
 				}
 
 				const calculatedMetaData = calculateMetaData(
-					mappedData,
+					trendMappedData,
 					selectedTrendType
 				);
 				setMetadata(calculatedMetaData);
@@ -418,6 +421,37 @@ const Dashboard = () => {
 								<div className="col-md-3">
 									<h6>Standard Deviation</h6>
 									<p className="text-primary">{metadata.stdDev.toFixed(2)}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+			{clientMetaData && (
+				<div className="mt-4">
+					<h5>Client Metadata:</h5>
+					<div className="card">
+						<div className="card-body">
+							<div className="row text-center">
+								<div className="col-md-3">
+									<h6>Minimum</h6>
+									<p className="text-primary">{clientMetaData.min}</p>
+								</div>
+								<div className="col-md-3">
+									<h6>Maximum</h6>
+									<p className="text-primary">{clientMetaData.max}</p>
+								</div>
+								<div className="col-md-3">
+									<h6>Average</h6>
+									<p className="text-primary">
+										{clientMetaData.mean.toFixed(2)}
+									</p>
+								</div>
+								<div className="col-md-3">
+									<h6>Standard Deviation</h6>
+									<p className="text-primary">
+										{clientMetaData.stdDev.toFixed(2)}
+									</p>
 								</div>
 							</div>
 						</div>
