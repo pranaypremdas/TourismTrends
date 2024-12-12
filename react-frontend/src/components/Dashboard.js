@@ -20,6 +20,7 @@ import { Line } from "react-chartjs-2";
 import postRequest from "./lib/postRequest";
 import getRequest from "./lib/getRequest";
 import filterYearOnYear from "./Dashboard/filterYearOnYear";
+import calculateMetaData from "./Dashboard/calculateMetaData";
 
 // custom components
 import Error from "./Error/Error";
@@ -33,28 +34,6 @@ ChartJS.register(
 	Tooltip,
 	Legend
 );
-
-/**
- * Calculates metadata statistics (minimum, maximum, mean, and standard deviation) for a given key in an array of objects.
- *
- * @param {Array<Object>} data - The array of objects containing the data.
- * @param {string} key - The key to extract values from each object in the array.
- * @returns {Object|null} An object containing the calculated metadata (min, max, mean, stdDev) or null if no valid values are found.
- */
-const calculateMetadata = (data, key) => {
-	const values = data.map((item) => item[key]).filter((v) => v != null);
-	if (!values.length) return null;
-
-	const sum = values.reduce((a, b) => a + b, 0);
-	const mean = sum / values.length;
-	const min = Math.min(...values);
-	const max = Math.max(...values);
-	const variance =
-		values.reduce((acc, v) => acc + (v - mean) ** 2, 0) / values.length;
-	const stdDev = Math.sqrt(variance);
-
-	return { min, max, mean, stdDev };
-};
 
 const Dashboard = () => {
 	const { user } = useContext(UserContext);
@@ -174,11 +153,11 @@ const Dashboard = () => {
 					});
 				}
 
-				const calculatedMetadata = calculateMetadata(
+				const calculatedMetaData = calculateMetaData(
 					mappedData,
 					selectedTrendType
 				);
-				setMetadata(calculatedMetadata);
+				setMetadata(calculatedMetaData);
 			}
 		} catch (error) {
 			console.error("Error fetching data:", error);
@@ -189,7 +168,7 @@ const Dashboard = () => {
 
 	// fetch LGAs on initial load
 	useEffect(() => {
-		async function fetchInitialData() {
+		const fetchInitialData = async () => {
 			const [lgaList, lgaError] = await getRequest("lga/list", false);
 			const [trendTypesList, trendTypesError] = await getRequest("trend/types");
 			if (lgaError) {
@@ -200,7 +179,7 @@ const Dashboard = () => {
 				setLgas(lgaList.results);
 				setTrendTypes(trendTypesList.results);
 			}
-		}
+		};
 		fetchInitialData();
 	}, []);
 
