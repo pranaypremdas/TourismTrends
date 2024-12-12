@@ -31,7 +31,7 @@ function SubscribeStep2({ newClient, setNewClient, state, setState }) {
 						<br />
 						<Container className="d-flex justify-content-between">
 							<Button
-								variant="primary"
+								variant="secondary"
 								onClick={() => setState((s) => ({ ...s, currentStep: 1 }))}
 							>
 								Back

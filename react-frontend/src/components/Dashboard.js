@@ -304,13 +304,11 @@ const Dashboard = () => {
 													value={selectedRegion}
 													onChange={(e) => setSelectedRegion(e.target.value)}
 												>
-													{user.client.lgaIds &&
-													user.client.lgaIds.length > 0 ? (
-														user.client.lgaIds.map((id) => {
-															const lga = lgas.find((lga) => lga.id === id);
+													{lgas && lgas.length > 0 ? (
+														lgas.map((lga) => {
 															return (
-																<option key={id} value={id}>
-																	{lga ? lga.lga_name : "Unknown"}
+																<option key={lga.id} value={lga.id}>
+																	{lga.lga_name}
 																</option>
 															);
 														})

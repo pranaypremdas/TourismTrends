@@ -3,9 +3,6 @@ import React from "react";
 // Bootstrap Components
 import { Table } from "react-bootstrap";
 
-// Custom Components
-import userPricing from "./userPricing";
-
 /**
  * QuoteTable component displays a table with the quote details for a new client.
  *
@@ -25,8 +22,9 @@ import userPricing from "./userPricing";
  * @returns {JSX.Element} The rendered QuoteTable component.
  */
 const QuoteTable = ({ newClient, state }) => {
-	const { clientType, lgaIds, licenses, message } = newClient;
-	const { lgas, price } = state;
+	const { clientType, licenses, message } = newClient;
+	const { price } = state;
+
 	return (
 		<>
 			<Table striped bordered hover>
@@ -43,29 +41,18 @@ const QuoteTable = ({ newClient, state }) => {
 						<td>{clientType}</td>
 						<td>${price.type}</td>
 					</tr>
-					<tr>
-						<td>Locations</td>
-						<td>
-							{lgaIds.map((location, index) => {
-								if (index === lgaIds.length - 1) {
-									return `${lgas[Number.parseInt(location) - 1].lga_name}`;
-								}
-								return `${lgas[Number.parseInt(location) - 1].lga_name}, `;
-							})}
-						</td>
-						<td>${price.locations}</td>
-					</tr>
+
 					<tr>
 						<td>Users</td>
 						<td>
-							{licenses} * ${userPricing[licenses]} / year
+							{licenses} * ${state.pricePerUser} / year
 						</td>
 						<td>${price.users}</td>
 					</tr>
 					<tr>
 						<td>Yearly Subscription</td>
 						<td></td>
-						<td>${price.type + price.locations + price.users}</td>
+						<td>${price.type + price.users}</td>
 					</tr>
 				</tbody>
 			</Table>

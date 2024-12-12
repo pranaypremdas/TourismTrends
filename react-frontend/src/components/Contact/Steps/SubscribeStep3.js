@@ -24,15 +24,22 @@ function SubscribeStep3({ newClient, setNewClient, state, setState }) {
 				<Card.Body>
 					<h2 className="text-center mb-4">Payment</h2>
 					<Card.Text>DUMMY PAYMENT PAGE</Card.Text>
-					<Button
-						variant="success"
-						className="mt-4"
-						onClick={(e) =>
-							handleSavePayment(e, state, setState, newClient, setNewClient)
-						}
-					>
-						Complete Payment
-					</Button>
+					<Container className="d-flex justify-content-between">
+						<Button
+							variant="secondary"
+							onClick={() => setState((s) => ({ ...s, currentStep: 1 }))}
+						>
+							Back
+						</Button>
+						<Button
+							variant="success"
+							onClick={(e) =>
+								handleSavePayment(e, state, setState, newClient, setNewClient)
+							}
+						>
+							Complete Payment
+						</Button>
+					</Container>
 				</Card.Body>
 			</Card>
 		</Container>

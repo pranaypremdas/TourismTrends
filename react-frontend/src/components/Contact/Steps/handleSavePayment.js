@@ -7,7 +7,7 @@ const handleSavePayment = (e, state, setState, newClient, setNewClient) => {
 		setState((s) => ({ ...s, loading: true }));
 		const clientToSend = {
 			...newClient,
-			amount: state.price.type + state.price.locations + state.price.type,
+			amount: state.price.type + state.price.users,
 		};
 
 		const [response, error] = await postRequest(

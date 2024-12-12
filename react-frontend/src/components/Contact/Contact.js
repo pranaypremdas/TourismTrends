@@ -7,7 +7,6 @@ import Error from "../Error/Error";
 import Loading from "../Loading";
 import SubscribeStep1 from "./Steps/SubscribeStep1";
 import SubscribeStep2 from "./Steps/SubscribeStep2";
-import SubscribeStep2GreaterThan25 from "./Steps/SubscribeStep2GreaterThan25";
 import SubscribeStep3 from "./Steps/SubscribeStep3";
 import SubscribeStep4 from "./Steps/SubscribeStep4";
 
@@ -33,6 +32,7 @@ const Contact = () => {
 		price: { locations: 0, users: 0, type: 0 },
 		type: "subscribe",
 		currentStep: 1,
+		pricePerUser: 25,
 	});
 
 	// Fetches the list of local government areas
@@ -70,8 +70,7 @@ const Contact = () => {
 		{
 			id: 2,
 			name: "Step 2: Price Summary",
-			Component:
-				newClient.licenses >= 25 ? SubscribeStep2GreaterThan25 : SubscribeStep2,
+			Component: SubscribeStep2,
 			props: { newClient, setNewClient, state, setState },
 		},
 		{

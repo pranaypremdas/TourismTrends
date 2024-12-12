@@ -3,9 +3,6 @@ import React, { useContext } from "react";
 // Bootstrap Components
 import { Container, Button, Card, Table } from "react-bootstrap";
 
-// Custom Components
-import userPricing from "./userPricing";
-
 // Contexts
 import { UserContext } from "../../../contexts/UserContext";
 
@@ -73,9 +70,7 @@ function RenewStep1({ newClient, setNewClient, state, setState }) {
 																	newClient.lgaIds.length > 1
 																		? (newClient.lgaIds.length - 1) * 200
 																		: 0,
-																users:
-																	newClient.licenses *
-																	userPricing[newClient.licenses],
+																users: newClient.licenses * state.pricePerUser,
 															},
 														}))
 													}

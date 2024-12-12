@@ -3,9 +3,6 @@ import React from "react";
 // Bootstrap Components
 import { Container, Form, Button, Card } from "react-bootstrap";
 
-// Custom Components
-import userPricing from "./userPricing";
-
 /**
  * SubscribeStep1 component renders a form for users to get a quote or contact the service.
  *
@@ -31,6 +28,26 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 		setNewClient((s) => ({ ...s, lgaIds: selectedValues }));
 	};
 
+	const handleLicensesChange = (e) => {
+		let licenseCount = Math.ceil(Math.max(1, e.target.value));
+		const minPricePerUser = 12.5; // Set a minimum price per user
+		const basePrice = 25;
+		const discount = (licenseCount / 100) * 15; // 15% discount of the license count
+
+		const pricePerUser = Math.max(
+			Math.round((basePrice - discount) * 100) / 100,
+			minPricePerUser
+		);
+		setNewClient((s) => ({
+			...s,
+			licenses: licenseCount,
+		}));
+		setState((s) => ({
+			...s,
+			pricePerUser: pricePerUser,
+		}));
+	};
+
 	// Calculates the price based on the user input
 	const handleGetQuote = (e) => {
 		e.preventDefault();
@@ -38,9 +55,9 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 			...s,
 			currentStep: 2,
 			price: {
-				type: clientType === "Government" ? 150 : 99,
+				type: clientType === "Government" ? 0 : 200,
 				locations: lgaIds.length > 1 ? (lgaIds.length - 1) * 200 : 0,
-				users: licenses * userPricing[licenses],
+				users: Math.round(licenses * s.pricePerUser * 100) / 100,
 			},
 		}));
 	};
@@ -86,9 +103,9 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 							>
 								<option value="">Select an option</option>
 								<option value="Government">
-									Local Government or Tourism Body (Single Area)
+									Local Government or Tourism Body
 								</option>
-								<option value="Business">Business (Multiple Areas)</option>
+								<option value="Business">Business (Can Upload Own Data)</option>
 							</Form.Select>
 						</Form.Group>
 						{!clientType && <p>Please select a membership type</p>}
@@ -112,8 +129,6 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 							<Form.Group className="mb-3" controlId="formLocationBus">
 								<Form.Label>
 									Select the Local Government Areas you operate in
-									<br />
-									($200 / year for each additional location)
 								</Form.Label>
 								<Form.Select
 									multiple
@@ -156,14 +171,12 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 									<Form.Control
 										type="number"
 										value={licenses}
-										onChange={(e) =>
-											setNewClient((s) => ({
-												...s,
-												licenses: Math.ceil(Math.max(1, e.target.value)),
-											}))
-										}
+										onChange={(e) => handleLicensesChange(e)}
 										required
 									></Form.Control>
+									<Form.Text className="text-muted">
+										Each user costs ${state.pricePerUser} per year User Costs $
+									</Form.Text>
 								</Form.Group>
 
 								<div className="d-flex justify-content-end mt-4">
