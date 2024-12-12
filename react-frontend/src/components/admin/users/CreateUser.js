@@ -7,7 +7,13 @@ import { Form, Button, Container, Alert, Card } from "react-bootstrap";
 import postRequest from "../../lib/postRequest";
 import { UserContext } from "../../../contexts/UserContext";
 
-const CreateUser = ({ clients, setUsers, maxUsers }) => {
+const CreateUser = ({
+	clients,
+	setUsers,
+	maxUsers,
+	setClients,
+	setMaxUsers,
+}) => {
 	const { user } = useContext(UserContext);
 	const [formData, setFormData] = useState({
 		name: "",
@@ -49,6 +55,17 @@ const CreateUser = ({ clients, setUsers, maxUsers }) => {
 					created_at: response.results.created_at,
 				},
 			]);
+			setClients((s) =>
+				s.map((client) => {
+					if (client.id === response.results.client_id) {
+						return {
+							...client,
+							user_count: client.user_count + 1,
+						};
+					}
+					return client;
+				})
+			);
 		}
 
 		setLoading(false);
@@ -66,6 +83,18 @@ const CreateUser = ({ clients, setUsers, maxUsers }) => {
 			}
 		}
 	}, [formData.email, formData.client_id, clients, user]);
+
+	// check maxUsers when clients changes
+	useEffect(() => {
+		if (clients && clients.length > 0) {
+			const thisClient = clients.find((client) => client.id === user.client_id);
+			if (thisClient && thisClient.user_count >= thisClient.licenses) {
+				setMaxUsers(true);
+			} else {
+				setMaxUsers(false);
+			}
+		}
+	}, [clients, user, setMaxUsers]);
 
 	return (
 		<Container className="d-flex justify-content-center mt-4 mb-4">
@@ -90,9 +119,10 @@ const CreateUser = ({ clients, setUsers, maxUsers }) => {
 							<Form.Control
 								type="email"
 								value={formData.email}
-								onChange={(e) =>
-									setFormData((s) => ({ ...s, email: e.target.value }))
-								}
+								onChange={(e) => {
+									setFormData((s) => ({ ...s, email: e.target.value }));
+									setError(null);
+								}}
 								required
 								disabled={loading || maxUsers}
 							/>
@@ -111,31 +141,13 @@ const CreateUser = ({ clients, setUsers, maxUsers }) => {
 								disabled={loading || maxUsers}
 							>
 								<option value="user">User</option>
-								<option value="client_admin">Client Admin</option>
+								{user.role === "client_admin" && (
+									<option value="client_admin">Client Admin</option>
+								)}
 								{user.role === "admin" && <option value="admin">Admin</option>}
 							</Form.Select>
 							<Form.Text className="text-muted">Required</Form.Text>
 						</Form.Group>
-
-						{user && user.role === "admin" && (
-							<Form.Group id="client" className="mb-3">
-								<Form.Label>Client</Form.Label>
-								<Form.Select
-									value={formData.client_id}
-									onChange={(e) =>
-										setFormData((s) => ({ ...s, client_id: e.target.value }))
-									}
-								>
-									<option value={null}>Select a client</option>
-									{clients &&
-										clients.map((client) => (
-											<option key={client.id} value={client.id}>
-												{client.c_name}
-											</option>
-										))}
-								</Form.Select>
-							</Form.Group>
-						)}
 
 						<div className="d-flex justify-content-between mt-2">
 							<Button

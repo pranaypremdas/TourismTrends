@@ -90,11 +90,12 @@ const ManageUsers = () => {
 
 				thisClient = clients.find((client) => client.id === user.client_id);
 
-				if (
-					user.role === "admin" ||
-					thisClient.user_count <= thisClient.licenses
-				) {
+				if (thisClient.user_count >= thisClient.licenses) {
 					setMaxUsers(true);
+				}
+
+				if (user.role === "admin") {
+					setMaxUsers(false);
 				}
 
 				setUsers(users);
@@ -159,6 +160,8 @@ const ManageUsers = () => {
 									clients={clients}
 									setUsers={setUsers}
 									maxUsers={maxUsers}
+									setClients={setClients}
+									setMaxUsers={setMaxUsers}
 								/>
 							</div>
 						</Tab>

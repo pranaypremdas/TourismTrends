@@ -132,9 +132,11 @@ router.post("/", async (req, res) => {
 		});
 		const hash = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
+		let id = uuidv4(); // obviscate the user id's
+
 		// insert user into database
-		let result = await req.db("users").insert({
-			id: uuidv4(), // obviscate the user id's
+		await req.db("users").insert({
+			id: id,
 			client_id,
 			name,
 			email,
@@ -143,18 +145,18 @@ router.post("/", async (req, res) => {
 		});
 
 		//get the updated user
-		const newUser = await req.db("users").where("id", result[0]).first();
+		const newUser = await req.db("users").where("id", id).first();
 
 		res.status(201).json({
 			error: false,
 			message: "User created",
-			results: { 
-				id: newUser.id,
-				name: newUser.name,
-				email: newUser.email,
+			results: {
+				id: id,
+				name: name,
+				email: email,
 				password: password,
-				role: newUser.role,
-				client_id: newUser.client_id,
+				role: role,
+				client_id: client_id,
 				updated_at: newUser.updated_at,
 				created_at: newUser.created_at,
 			},
