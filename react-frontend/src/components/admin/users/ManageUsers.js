@@ -44,6 +44,7 @@ const ManageUsers = () => {
 	const [newClients, setNewClients] = useState(null);
 	const [error, setError] = useState(null);
 	const [loading, setLoading] = useState(false);
+	const [maxUsers, setMaxUsers] = useState(false);
 
 	useEffect(() => {
 		const getUsers = async () => {
@@ -64,13 +65,13 @@ const ManageUsers = () => {
 			} else if (newClientError) {
 				setError(newClientError);
 			} else {
+				let thisClient = clientList.results.find(
+					(client) => client.id === user.client_id
+				);
 				const users = userList.results.map((user) => {
-					const client = clientList.results.find(
-						(client) => client.id === user.client_id
-					);
 					return {
 						...user,
-						client_name: client ? client.c_name : "Unknown",
+						client_name: thisClient ? thisClient.c_name : "Unknown",
 					};
 				});
 				const clients = clientList.results.map((client) => {
@@ -86,6 +87,15 @@ const ManageUsers = () => {
 						userExists: users.some((user) => user.email === client.email),
 					};
 				});
+
+				thisClient = clients.find((client) => client.id === user.client_id);
+
+				if (
+					user.role === "admin" ||
+					thisClient.user_count <= thisClient.licenses
+				) {
+					setMaxUsers(true);
+				}
 
 				setUsers(users);
 				setClients(clients);
@@ -141,10 +151,15 @@ const ManageUsers = () => {
 								<UserList users={users} />
 							</div>
 						</Tab>
+
 						<Tab eventKey="createNewUser" title="Register New User">
 							<div className="mt-3">
 								<h3>Create New User</h3>
-								<CreateUser clients={clients} />
+								<CreateUser
+									clients={clients}
+									setUsers={setUsers}
+									maxUsers={maxUsers}
+								/>
 							</div>
 						</Tab>
 					</Tabs>

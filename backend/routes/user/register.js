@@ -96,9 +96,10 @@ var generator = require("generate-password");
 router.post("/", async (req, res) => {
 	try {
 		// process body of request
-		let email = req.body.email ? req.body.email[0] : null;
-		let role = req.body.role ? req.body.role[0] : "user";
-		let client_id = req.body.client_id ? req.body.client_id[0] : null;
+		let name = req.body.name;
+		let email = req.body.email;
+		let role = req.body.role;
+		let client_id = req.body.client_id;
 
 		// check client_id (have already checked email and password)
 		if (!client_id) {
@@ -132,22 +133,30 @@ router.post("/", async (req, res) => {
 		const hash = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
 		// insert user into database
-		await req.db("users").insert({
-			id: uuidv4(), // obviscate the user id
+		let result = await req.db("users").insert({
+			id: uuidv4(), // obviscate the user id's
 			client_id,
+			name,
 			email,
 			role,
 			hash,
 		});
 
+		//get the updated user
+		const newUser = await req.db("users").where("id", result[0]).first();
+
 		res.status(201).json({
 			error: false,
 			message: "User created",
-			results: {
-				email,
-				password,
-				role,
-				client_id,
+			results: { 
+				id: newUser.id,
+				name: newUser.name,
+				email: newUser.email,
+				password: password,
+				role: newUser.role,
+				client_id: newUser.client_id,
+				updated_at: newUser.updated_at,
+				created_at: newUser.created_at,
 			},
 		});
 	} catch (error) {
