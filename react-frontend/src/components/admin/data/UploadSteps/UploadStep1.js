@@ -35,6 +35,29 @@ function UploadStep1({
 		setState((s) => ({ ...s, processing: true, message: null, error: null }));
 		const file = event.target.files[0];
 
+		if (!file) {
+			setState((s) => ({ ...s, processing: false }));
+			return;
+		}
+
+		if (file.size > 10485760) {
+			setState((s) => ({
+				...s,
+				processing: false,
+				message: "File size exceeds 10MB limit.",
+			}));
+			return;
+		}
+
+		if (file.type !== "application/vnd.ms-excel") {
+			setState((s) => ({
+				...s,
+				processing: false,
+				message: "Invalid file type. Please upload a CSV file.",
+			}));
+			return;
+		}
+
 		// prepare to read the file
 		const reader = new FileReader();
 		reader.onload = (e) => {
