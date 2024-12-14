@@ -9,6 +9,7 @@ import { UserContext } from "../../contexts/UserContext";
 
 // Custom Components
 import handleLogin from "./handleLogin";
+import testEmail from "../lib/testEmail";
 
 const Login = () => {
 	let navigate = useNavigate();
@@ -21,6 +22,8 @@ const Login = () => {
 	useEffect(() => {
 		if (!email && !password) {
 			setFormError(null);
+		} else if (email && !testEmail(email)) {
+			setFormError("Please enter a valid email address");
 		} else if (!email || !password) {
 			setFormError("Please fill in all fields");
 		} else {
@@ -38,7 +41,7 @@ const Login = () => {
 			<Card style={{ width: "100%", maxWidth: "400px" }}>
 				<Card.Body>
 					<h2 className="text-center mb-4">Please Login</h2>
-					{formError && <Alert variant="danger">{formError}</Alert>}
+
 					<Form onSubmit={(e) => onLogin(e)}>
 						<Form.Group id="email" className="mb-3">
 							<Form.Label>Email</Form.Label>
@@ -58,6 +61,7 @@ const Login = () => {
 								required
 							/>
 						</Form.Group>
+						{formError && <Alert variant="warning">{formError}</Alert>}
 						<Button type="submit" className="w-100" disabled={loading}>
 							Login
 						</Button>

@@ -190,7 +190,7 @@ function UploadStep1({
 									onChange={handleFileUpload}
 									disabled={state.loading}
 									required
-									style={{ width: "100%" }} // Ensure the file input has the same width
+									style={{ width: "100%" }}
 								/>
 
 								<Form.Text className="text-muted">
@@ -212,7 +212,7 @@ function UploadStep1({
 									value={formData.fileName}
 									disabled
 									required
-									style={{ width: "100%" }} // Ensure the text input has the same width
+									style={{ width: "100%" }}
 								/>
 
 								<Form.Text className="text-muted">

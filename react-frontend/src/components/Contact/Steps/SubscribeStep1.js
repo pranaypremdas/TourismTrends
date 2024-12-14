@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 // Bootstrap Components
-import { Container, Form, Button, Card } from "react-bootstrap";
+import { Container, Form, Button, Card, Alert } from "react-bootstrap";
+
+import testEmail from "../../lib/testEmail";
 
 /**
  * SubscribeStep1 component renders a form for users to get a quote or contact the service.
@@ -16,6 +18,7 @@ import { Container, Form, Button, Card } from "react-bootstrap";
  */
 function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 	let { name, email, clientType, clientName, lgaIds, licenses } = newClient;
+	let { formError } = state;
 
 	const handleLocationChange = (e) => {
 		const options = e.target.options;
@@ -61,6 +64,34 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 			},
 		}));
 	};
+
+	useEffect(() => {
+		if (!email) {
+			setState((s) => ({ ...s, formError: null }));
+		} else if (email && !testEmail(email)) {
+			setState((s) => ({
+				...s,
+				formError: "Please enter a valid email address",
+			}));
+		} else if (
+			!name ||
+			!email ||
+			!clientType ||
+			!lgaIds ||
+			!clientName ||
+			!licenses
+		) {
+			setState((s) => ({
+				...s,
+				formError: "Please fill in all fields",
+			}));
+		} else {
+			setState((s) => ({
+				...s,
+				formError: null,
+			}));
+		}
+	}, [name, email, clientType, lgaIds, clientName, licenses]);
 
 	return (
 		<Container className="d-flex justify-content-center align-items-top mt-4 mb-4">
@@ -186,6 +217,7 @@ function SubscribeStep1({ newClient, setNewClient, state, setState }) {
 								</div>
 							</>
 						)}
+						{formError && <Alert variant="warning">{formError}</Alert>}
 					</Form>
 				</Card.Body>
 			</Card>

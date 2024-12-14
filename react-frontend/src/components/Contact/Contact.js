@@ -18,7 +18,7 @@ const Contact = () => {
 		clientName: "",
 		clientType: "",
 		lgaIds: [],
-		licenses: 0,
+		licenses: 1,
 		message: "",
 		amount: 0,
 		paymentMethod: "Payment Pending",
@@ -33,6 +33,7 @@ const Contact = () => {
 		type: "subscribe",
 		currentStep: 1,
 		pricePerUser: 25,
+		formError: null,
 	});
 
 	// Fetches the list of local government areas
