@@ -258,7 +258,7 @@ const Dashboard = () => {
 				</Form.Control>
 			</Form.Group>
 
-			{user.dataExists && (
+			{user.dataExists && user.role !== "admin" && (
 				<Form.Group controlId="checkClientData" className="mb-4">
 					<Form.Check
 						type="checkbox"
