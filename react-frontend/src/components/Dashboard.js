@@ -222,7 +222,14 @@ const Dashboard = () => {
 				clientDataKey
 			);
 		}
-	}, [selectedRegion, rowData, activeTab, selectedTrendType, lgas]);
+	}, [
+		selectedRegion,
+		rowData,
+		activeTab,
+		selectedTrendType,
+		lgas,
+		clientDataKey,
+	]);
 
 	// get data from api on form change
 	useEffect(() => {

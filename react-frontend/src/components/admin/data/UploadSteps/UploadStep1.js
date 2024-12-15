@@ -7,7 +7,7 @@ import { parse, format } from "date-fns";
 import { read, utils } from "xlsx";
 
 // Bootstrap Components
-import { Container, Card, Form, Button } from "react-bootstrap";
+import { Container, Card, Form, Button, Alert } from "react-bootstrap";
 
 /**
  * Component for the first step of the upload process.
@@ -229,7 +229,7 @@ function UploadStep1({
 
 						{state.processing && <Form.Text>Processing file...</Form.Text>}
 						{state.message && (
-							<Form.Text className="warning">{state.message}</Form.Text>
+							<Alert className="warning">{state.message}</Alert>
 						)}
 					</Form.Group>
 
@@ -243,7 +243,7 @@ function UploadStep1({
 									fileData: null,
 									colTypes: [],
 								});
-								setState({ ...state, message: "", processing: false });
+								setState({ ...state, message: null, processing: false });
 								if (fileInputRef.current) {
 									fileInputRef.current.value = "";
 								}
