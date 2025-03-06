@@ -11,6 +11,7 @@ import { UserContext } from "../../contexts/UserContext";
 import postRequest from "../lib/postRequest";
 import Loading from "../Loading";
 import handleLogin from "./handleLogin";
+import testEmail from "../lib/testEmail";
 
 const FirstUser = () => {
 	let navigate = useNavigate();
@@ -25,6 +26,8 @@ const FirstUser = () => {
 	useEffect(() => {
 		if (!email && !name) {
 			setFormError(null);
+		} else if (email && !testEmail(email)) {
+			setFormError("Please enter a valid email address");
 		} else if (!email || !name) {
 			setFormError("Please fill in all fields");
 		} else {

@@ -7,7 +7,7 @@ import { parse, format } from "date-fns";
 import { read, utils } from "xlsx";
 
 // Bootstrap Components
-import { Container, Card, Form, Button } from "react-bootstrap";
+import { Container, Card, Form, Button, Alert } from "react-bootstrap";
 
 /**
  * Component for the first step of the upload process.
@@ -34,6 +34,29 @@ function UploadStep1({
 	const handleFileUpload = (event) => {
 		setState((s) => ({ ...s, processing: true, message: null, error: null }));
 		const file = event.target.files[0];
+
+		if (!file) {
+			setState((s) => ({ ...s, processing: false }));
+			return;
+		}
+
+		if (file.size > 10485760) {
+			setState((s) => ({
+				...s,
+				processing: false,
+				message: "File size exceeds 10MB limit.",
+			}));
+			return;
+		}
+
+		if (file.type !== "application/vnd.ms-excel") {
+			setState((s) => ({
+				...s,
+				processing: false,
+				message: "Invalid file type. Please upload a CSV file.",
+			}));
+			return;
+		}
 
 		// prepare to read the file
 		const reader = new FileReader();
@@ -167,7 +190,7 @@ function UploadStep1({
 									onChange={handleFileUpload}
 									disabled={state.loading}
 									required
-									style={{ width: "100%" }} // Ensure the file input has the same width
+									style={{ width: "100%" }}
 								/>
 
 								<Form.Text className="text-muted">
@@ -189,7 +212,7 @@ function UploadStep1({
 									value={formData.fileName}
 									disabled
 									required
-									style={{ width: "100%" }} // Ensure the text input has the same width
+									style={{ width: "100%" }}
 								/>
 
 								<Form.Text className="text-muted">
@@ -206,7 +229,7 @@ function UploadStep1({
 
 						{state.processing && <Form.Text>Processing file...</Form.Text>}
 						{state.message && (
-							<Form.Text className="warning">{state.message}</Form.Text>
+							<Alert className="warning">{state.message}</Alert>
 						)}
 					</Form.Group>
 
@@ -220,7 +243,7 @@ function UploadStep1({
 									fileData: null,
 									colTypes: [],
 								});
-								setState({ ...state, message: "", processing: false });
+								setState({ ...state, message: null, processing: false });
 								if (fileInputRef.current) {
 									fileInputRef.current.value = "";
 								}

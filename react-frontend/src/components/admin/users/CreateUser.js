@@ -6,6 +6,7 @@ import { Form, Button, Container, Alert, Card } from "react-bootstrap";
 // Custom Components
 import postRequest from "../../lib/postRequest";
 import { UserContext } from "../../../contexts/UserContext";
+import testEmail from "../../lib/testEmail";
 
 const CreateUser = ({
 	clients,
@@ -73,7 +74,9 @@ const CreateUser = ({
 
 	// check that the email domain matches the client domain
 	useEffect(() => {
-		if (formData.email && formData.email.includes("@")) {
+		if (formData.email && !testEmail(formData.email)) {
+			setMessage("Please enter a valid email address");
+		} else if (formData.email) {
 			const foundClient = clients.find((c) => c.id === formData.client_id);
 			const emailDomain = formData.email.split("@")[1];
 			if (emailDomain !== foundClient.domain) {
